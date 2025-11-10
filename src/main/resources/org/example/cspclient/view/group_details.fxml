@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.GroupDetailsController">
+    <top>
+        <ToolBar>
+            <Button text="⟵ Назад" onAction="#backToDashboard"/>
+            <Label fx:id="groupTitleLabel" text="Група"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.6">
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Завдання"/>
+                    <Button text="Додати" onAction="#onAddTask"/>
+                    <Button text="Змінити статус" onAction="#onChangeStatus"/>
+                </HBox>
+                <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colTitle" text="Назва" prefWidth="180"/>
+                        <TableColumn fx:id="colDesc" text="Опис" prefWidth="230"/>
+                        <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
+                        <TableColumn fx:id="colDeadline" text="Дедлайн" prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <VBox spacing="10">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Матеріали"/>
+                    <Button text="Додати" onAction="#onAddResource"/>
+                </HBox>
+                <ListView fx:id="resourcesList" prefHeight="200"/>
+
+                <Label text="Активність"/>
+                <ListView fx:id="activityList" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>
