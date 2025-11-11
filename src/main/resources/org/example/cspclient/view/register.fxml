@@ -4,35 +4,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.RegisterController">
-    <top>
-        <Label text="Collaborative Study Platform — Реєстрація" BorderPane.alignment="CENTER">
-            <BorderPane.margin>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </BorderPane.margin>
-        </Label>
-    </top>
-    <center>
-        <GridPane hgap="10" vgap="10">
-            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
-            <columnConstraints>
-                <ColumnConstraints halignment="RIGHT" minWidth="120"/>
-                <ColumnConstraints halignment="LEFT" minWidth="250"/>
-            </columnConstraints>
+<StackPane xmlns:fx="http://javafx.com/fxml" styleClass="auth-root" fx:controller="org.example.cspclient.controller.RegisterController">
+    <children>
+        <!-- Center this VBox inside StackPane explicitly -->
+        <VBox alignment="CENTER" spacing="20" StackPane.alignment="CENTER">
+            <Label text="Collaborative Study Platform" styleClass="brand-title"/>
+            <VBox alignment="CENTER" styleClass="auth-card" spacing="14" maxWidth="520">
+                <Label text="Реєстрація" styleClass="card-title"/>
+                <GridPane hgap="12" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" minWidth="120"/>
+                        <ColumnConstraints halignment="LEFT" minWidth="320" hgrow="ALWAYS"/>
+                    </columnConstraints>
 
-            <Label text="Ім'я:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="Ім'я:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-            <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextField fx:id="emailField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="emailField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-            <Label text="Пароль:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <PasswordField fx:id="passwordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="Пароль:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <PasswordField fx:id="passwordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-            <HBox spacing="10" GridPane.rowIndex="3" GridPane.columnIndex="1">
-                <Button text="Зареєструватися" onAction="#onRegister"/>
-                <Button text="Назад" onAction="#backToLogin"/>
-            </HBox>
-        </GridPane>
-    </center>
-</BorderPane>
+                    <!-- Buttons aligned under inputs -->
+                    <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                        <Button text="Зареєструватися" onAction="#onRegister"/>
+                        <Button text="Назад" onAction="#backToLogin"/>
+                    </HBox>
+                </GridPane>
+            </VBox>
+            <Label text="© 2025 CSP" styleClass="brand-footnote"/>
+        </VBox>
+    </children>
+</StackPane>

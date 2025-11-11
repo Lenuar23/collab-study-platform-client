@@ -6,22 +6,30 @@ import javafx.scene.Scene;
 import org.example.cspclient.MainApp;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class ViewManager {
 
     public Scene loadLoginScene() throws IOException { return loadScene("/org/example/cspclient/view/login.fxml"); }
     public Scene loadRegisterScene() throws IOException { return loadScene("/org/example/cspclient/view/register.fxml"); }
-    public Scene loadDashboardScene() throws IOException { return loadScene("/org/example/cspclient/view/dashboard.fxml"); }
+    public Scene loadHomeScene() throws IOException { return loadScene("/org/example/cspclient/view/home.fxml"); }
     public Scene loadGroupDetailsScene() throws IOException { return loadScene("/org/example/cspclient/view/group_details.fxml"); }
-    public Scene loadChatScene() throws IOException { return loadScene("/org/example/cspclient/view/chat.fxml"); }
 
     private Scene loadScene(String resource) throws IOException {
-        FXMLLoader loader = new FXMLLoader(MainApp.class.getResource(resource));
+        URL url = MainApp.class.getResource(resource);
+        if (url == null) {
+            throw new IOException("FXML not found: " + resource + " (check path under src/main/resources)");
+        }
+        FXMLLoader loader = new FXMLLoader(url);
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        // attach theme
-        String css = MainApp.class.getResource("/org/example/cspclient/application.css").toExternalForm();
-        scene.getStylesheets().add(css);
+
+        URL css = MainApp.class.getResource("/org/example/cspclient/application.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        } else {
+            System.err.println("WARN: application.css not found at /org/example/cspclient/application.css");
+        }
         return scene;
     }
 }

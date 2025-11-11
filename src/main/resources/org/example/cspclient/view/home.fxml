@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.HomeController">
+    <top>
+        <ToolBar styleClass="topbar">
+            <Label text="Collaborative Study Platform" styleClass="title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="Вийти" onAction="#onLogout"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE">
+            <Tab text="Чати">
+                <content>
+                    <fx:include source="chat_embedded.fxml"/>
+                </content>
+            </Tab>
+            <Tab text="Групи">
+                <content>
+                    <fx:include source="groups.fxml"/>
+                </content>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

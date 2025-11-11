@@ -9,11 +9,9 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.example.cspclient.di.ServiceLocator;
 import org.example.cspclient.model.ChatMessage;
@@ -42,7 +40,6 @@ public class ChatController {
         conversationsList.setItems(conversations);
         messagesList.setItems(messages);
 
-        // Pretty cells for conversations
         conversationsList.setCellFactory(list -> new ListCell<>() {
             @Override protected void updateItem(Conversation c, boolean empty) {
                 super.updateItem(c, empty);
@@ -53,14 +50,11 @@ public class ChatController {
                 }
                 long me = ServiceLocator.getCurrentUser().getId();
                 long otherId = c.getUserAId() == me ? c.getUserBId() : c.getUserAId();
-                String otherName = ("User " + otherId);
-                // (In mock/api we don't have direct resolver; show id. Optionally can fetch by email if available)
-                setText(otherName + "\n" + (c.getLastMessageAt() != null ? c.getLastMessageAt().toString() : ""));
+                setText("User " + otherId + (c.getLastMessageAt() != null ? "\n" + c.getLastMessageAt().toString() : ""));
                 getStyleClass().add("conv-cell");
             }
         });
 
-        // Pretty bubble cells for messages
         messagesList.setCellFactory(list -> new ListCell<>() {
             private final HBox box = new HBox();
             private final Label bubble = new Label();
@@ -68,7 +62,8 @@ public class ChatController {
             private final Region spacer = new Region();
             {
                 bubble.setWrapText(true);
-                bubble.setMaxWidth(420);
+                // bind bubble width to ~65% of list width
+                bubble.maxWidthProperty().bind(list.widthProperty().multiply(0.65));
                 time.getStyleClass().add("msg-time");
                 HBox.setHgrow(spacer, Priority.ALWAYS);
                 box.setPadding(new Insets(6,10,6,10));
@@ -101,7 +96,6 @@ public class ChatController {
             if (n != null) openConversation(n);
         });
 
-        // Polling every 2 seconds (mock replacement for WebSocket)
         poller = new Timeline(new KeyFrame(Duration.seconds(2), e -> refreshMessages()));
         poller.setCycleCount(Timeline.INDEFINITE);
         poller.play();
@@ -122,7 +116,6 @@ public class ChatController {
 
     private void openConversation(Conversation c) {
         currentConv = c;
-        chatTitle.setText("Діалог #" + c.getId());
         refreshMessages();
     }
 
@@ -175,15 +168,5 @@ public class ChatController {
                 AlertUtils.error("Новий чат", ex.getMessage());
             }
         });
-    }
-
-    @FXML
-    public void backToDashboard(ActionEvent e) {
-        try {
-            if (poller != null) poller.stop();
-            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadDashboardScene());
-        } catch (Exception ex) {
-            AlertUtils.error("Навігація", ex.getMessage());
-        }
     }
 }

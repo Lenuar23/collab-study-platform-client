@@ -15,21 +15,18 @@ public class RegisterController {
     @FXML private PasswordField passwordField;
 
     @FXML
-    public void initialize() {}
-
-    @FXML
     public void onRegister(ActionEvent e) {
         String name = nameField.getText();
         String email = emailField.getText();
-        String pwd = passwordField.getText();
-        if (Validation.isNullOrBlank(name) || Validation.isNullOrBlank(email) || Validation.isNullOrBlank(pwd)) {
+        String password = passwordField.getText();
+        if (Validation.isNullOrBlank(name) || Validation.isNullOrBlank(email) || Validation.isNullOrBlank(password)) {
             AlertUtils.error("Помилка", "Заповніть усі поля");
             return;
         }
         try {
-            User u = ServiceLocator.getApiClient().register(name, email, pwd);
-            AlertUtils.info("Успіх", "Користувача створено: " + u.getEmail());
-            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadLoginScene());
+            User u = ServiceLocator.getApiClient().register(name, email, password);
+            ServiceLocator.setCurrentUser(u);
+            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadHomeScene());
         } catch (Exception ex) {
             AlertUtils.error("Реєстрація", ex.getMessage());
         }
@@ -38,9 +35,9 @@ public class RegisterController {
     @FXML
     public void backToLogin(ActionEvent e) {
         try {
-            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadLoginScene());
+            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadLoginScene());
         } catch (Exception ex) {
-            AlertUtils.error("Помилка", ex.getMessage());
+            AlertUtils.error("Навігація", ex.getMessage());
         }
     }
 }

@@ -6,42 +6,40 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.GroupDetailsController">
     <top>
-        <ToolBar>
-            <Button text="⟵ Назад" onAction="#backToDashboard"/>
-            <Label fx:id="groupTitleLabel" text="Група"/>
+        <ToolBar styleClass="topbar">
+            <Button text="⟵ Назад" onAction="#onBack"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="groupTitle" text="Група" styleClass="title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <HBox fx:id="taskButtonsBox" spacing="8">
+                <Button text="Додати завдання" onAction="#onAddTask"/>
+                <Button text="Змінити статус" onAction="#onChangeStatus"/>
+                <Button text="Додати матеріал" onAction="#onAddResource"/>
+            </HBox>
         </ToolBar>
     </top>
 
     <center>
-        <SplitPane dividerPositions="0.6">
-            <VBox spacing="10">
+        <SplitPane dividerPositions="0.5">
+            <VBox spacing="8">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="Завдання"/>
-                    <Button text="Додати" onAction="#onAddTask"/>
-                    <Button text="Змінити статус" onAction="#onChangeStatus"/>
-                </HBox>
-                <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TableColumn fx:id="colTitle" text="Назва" prefWidth="180"/>
-                        <TableColumn fx:id="colDesc" text="Опис" prefWidth="230"/>
-                        <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
-                        <TableColumn fx:id="colDeadline" text="Дедлайн" prefWidth="120"/>
-                    </columns>
-                </TableView>
+                <Label text="Завдання" styleClass="section-title"/>
+                <ListView fx:id="tasksList" VBox.vgrow="ALWAYS"/>
             </VBox>
 
-            <VBox spacing="10">
+            <VBox spacing="8">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Label text="Матеріали"/>
-                    <Button text="Додати" onAction="#onAddResource"/>
-                </HBox>
-                <ListView fx:id="resourcesList" prefHeight="200"/>
-
-                <Label text="Активність"/>
-                <ListView fx:id="activityList" VBox.vgrow="ALWAYS"/>
+                <Label text="Матеріали" styleClass="section-title"/>
+                <ListView fx:id="resourcesList" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
     </center>
+
+    <bottom>
+        <VBox spacing="8">
+            <padding><Insets top="0" right="10" bottom="10" left="10"/></padding>
+            <Label text="Активність" styleClass="section-title"/>
+            <ListView fx:id="activityList" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </bottom>
 </BorderPane>

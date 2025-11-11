@@ -16,9 +16,6 @@ public class LoginController {
     @FXML private PasswordField passwordField;
 
     @FXML
-    public void initialize() {}
-
-    @FXML
     public void onLogin(ActionEvent e) {
         String email = emailField.getText();
         String password = passwordField.getText();
@@ -30,7 +27,7 @@ public class LoginController {
             Optional<User> user = ServiceLocator.getApiClient().login(email, password);
             if (user.isPresent()) {
                 ServiceLocator.setCurrentUser(user.get());
-                ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadDashboardScene());
+                ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadHomeScene());
             } else {
                 AlertUtils.error("Авторизація", "Невірні дані.");
             }
@@ -42,7 +39,7 @@ public class LoginController {
     @FXML
     public void goToRegister(ActionEvent e) {
         try {
-            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadRegisterScene());
+            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadRegisterScene());
         } catch (Exception ex) {
             AlertUtils.error("Помилка", ex.getMessage());
         }

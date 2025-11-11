@@ -1,79 +1,87 @@
+
 package org.example.cspclient.controller;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import org.example.cspclient.di.ServiceLocator;
 import org.example.cspclient.model.*;
 import org.example.cspclient.util.AlertUtils;
 
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public class GroupDetailsController {
 
-    @FXML private Label groupTitleLabel;
-    @FXML private TableView<TaskItem> tasksTable;
-    @FXML private TableColumn<TaskItem, String> colTitle;
-    @FXML private TableColumn<TaskItem, String> colDesc;
-    @FXML private TableColumn<TaskItem, TaskStatus> colStatus;
-    @FXML private TableColumn<TaskItem, LocalDate> colDeadline;
-
+    @FXML private Label groupTitle;
+    @FXML private ListView<TaskItem> tasksList;
     @FXML private ListView<ResourceItem> resourcesList;
-    @FXML private ListView<String> activityList;
+    @FXML private ListView<ActivityLog> activityList;
+    @FXML private HBox taskButtonsBox;
 
-    private Group group;
+    private Group currentGroup;
 
     @FXML
     public void initialize() {
         Object g = ServiceLocator.getStage().getProperties().get("selectedGroup");
-        if (!(g instanceof Group)) {
-            AlertUtils.error("Група", "Групу не знайдено");
-            return;
+        if (g instanceof Group) currentGroup = (Group) g;
+        if (currentGroup != null) {
+            groupTitle.setText(currentGroup.getName());
+            // Pretty renderers
+            tasksList.setCellFactory(list -> new ListCell<>() {
+                @Override protected void updateItem(TaskItem t, boolean empty) {
+                    super.updateItem(t, empty);
+                    setText(empty || t==null ? null : t.getTitle());
+                }
+            });
+            resourcesList.setCellFactory(list -> new ListCell<>() {
+                @Override protected void updateItem(ResourceItem r, boolean empty) {
+                    super.updateItem(r, empty);
+                    if (empty || r==null) { setText(null); return; }
+                    // Defensive: try to extract a reasonable label without knowing exact model getters
+                    String label = tryStringGetter(r, "getTitle");
+                    if (label == null) label = tryStringGetter(r, "getName");
+                    if (label == null) label = tryStringGetter(r, "getUrl");
+                    if (label == null) label = tryStringGetter(r, "getPath");
+                    if (label == null) label = r.toString();
+                    setText(label);
+                }
+            });
+            activityList.setCellFactory(list -> new ListCell<>() {
+                @Override protected void updateItem(ActivityLog a, boolean empty) {
+                    super.updateItem(a, empty);
+                    setText(empty || a==null ? null : a.getAction()+" • "+a.getTimestamp());
+                }
+            });
+            refreshAll();
         }
-        this.group = (Group) g;
-        groupTitleLabel.setText("Група: " + group.getName());
+    }
 
-        // Setup table columns
-        colTitle.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getTitle()));
-        colDesc.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getDescription()));
-        colStatus.setCellValueFactory(c -> new javafx.beans.property.SimpleObjectProperty<>(c.getValue().getStatus()));
-        colDeadline.setCellValueFactory(c -> new javafx.beans.property.SimpleObjectProperty<>(c.getValue().getDeadline()));
-
-        refreshAll();
+    private String tryStringGetter(Object obj, String method) {
+        try {
+            Method m = obj.getClass().getMethod(method);
+            Object v = m.invoke(obj);
+            return v != null ? v.toString() : null;
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     private void refreshAll() {
         try {
-            List<TaskItem> tasks = ServiceLocator.getApiClient().listTasks(group.getId());
-            tasksTable.setItems(FXCollections.observableArrayList(tasks));
-
-            List<ResourceItem> resources = ServiceLocator.getApiClient().listResources(group.getId());
-            resourcesList.setItems(FXCollections.observableArrayList(resources));
-
-            // Activity
-            List<ActivityLog> logs = ServiceLocator.getApiClient().listActivity(group.getId());
-            ObservableList<String> lines = FXCollections.observableArrayList();
-            for (ActivityLog log : logs) {
-                lines.add(log.getTimestamp() + " | " + log.getAction() + " | " + log.getDetails());
-            }
-            activityList.setItems(lines);
-
-        } catch (Exception ex) {
-            AlertUtils.error("Оновлення", ex.getMessage());
-        }
-    }
-
-    @FXML
-    public void backToDashboard(ActionEvent e) {
-        try {
-            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadDashboardScene());
-        } catch (Exception ex) {
-            AlertUtils.error("Навігація", ex.getMessage());
+            tasksList.setItems(FXCollections.observableArrayList(
+                    ServiceLocator.getApiClient().listTasks(currentGroup.getId())));
+            resourcesList.setItems(FXCollections.observableArrayList(
+                    ServiceLocator.getApiClient().listResources(currentGroup.getId())));
+            activityList.setItems(FXCollections.observableArrayList(
+                    ServiceLocator.getApiClient().listActivity(currentGroup.getId())));
+        } catch (Exception e) {
+            AlertUtils.error("Оновлення", e.getMessage());
         }
     }
 
@@ -82,95 +90,73 @@ public class GroupDetailsController {
         Dialog<TaskItem> dialog = new Dialog<>();
         dialog.setTitle("Нове завдання");
 
-        TextField title = new TextField();
-        TextField desc = new TextField();
-        ComboBox<TaskStatus> status = new ComboBox<>();
-        status.getItems().setAll(TaskStatus.values());
-        status.getSelectionModel().select(TaskStatus.OPEN);
+        TextField titleF = new TextField();
+        TextField descF = new TextField();
         DatePicker deadline = new DatePicker();
 
-        GridPane gp = new GridPane();
-        gp.setHgap(10); gp.setVgap(10);
-        gp.addRow(0, new Label("Заголовок:"), title);
-        gp.addRow(1, new Label("Опис:"), desc);
-        gp.addRow(2, new Label("Статус:"), status);
-        gp.addRow(3, new Label("Дедлайн:"), deadline);
-        dialog.getDialogPane().setContent(gp);
+        GridPane grid = new GridPane();
+        grid.setHgap(10); grid.setVgap(10);
+        grid.addRow(0, new Label("Назва:"), titleF);
+        grid.addRow(1, new Label("Опис:"), descF);
+        grid.addRow(2, new Label("Дедлайн:"), deadline);
+
+        dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
         dialog.setResultConverter(bt -> {
             if (bt == ButtonType.OK) {
                 try {
-                    LocalDate dl = deadline.getValue();
-                    return ServiceLocator.getApiClient().createTask(group.getId(), ServiceLocator.getCurrentUser().getId(),
-                            title.getText(), desc.getText(), status.getValue(), dl);
+                    return ServiceLocator.getApiClient().createTask(
+                            currentGroup.getId(),
+                            ServiceLocator.getCurrentUser().getId(),
+                            titleF.getText(),
+                            descF.getText(),
+                            TaskStatus.OPEN,
+                            deadline.getValue() != null ? deadline.getValue() : LocalDate.now().plusDays(3)
+                    );
                 } catch (Exception ex) {
                     AlertUtils.error("Створення завдання", ex.getMessage());
-                    return null;
                 }
             }
             return null;
         });
 
-        Optional<TaskItem> res = dialog.showAndWait();
-        res.ifPresent(t -> refreshAll());
+        Optional.ofNullable(dialog.showAndWait().orElse(null)).ifPresent(t -> refreshAll());
     }
 
     @FXML
     public void onChangeStatus(ActionEvent e) {
-        TaskItem selected = tasksTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            AlertUtils.error("Завдання", "Оберіть завдання");
-            return;
-        }
-        ChoiceDialog<TaskStatus> dlg = new ChoiceDialog<>(selected.getStatus(), TaskStatus.values());
-        dlg.setTitle("Змінити статус");
-        dlg.setHeaderText(selected.getTitle());
-        dlg.setContentText("Новий статус:");
-        Optional<TaskStatus> res = dlg.showAndWait();
-        res.ifPresent(st -> {
+        TaskItem t = tasksList.getSelectionModel().getSelectedItem();
+        if (t == null) { AlertUtils.error("Завдання", "Оберіть завдання"); return; }
+        ChoiceDialog<TaskStatus> dlg = new ChoiceDialog<>(t.getStatus(), TaskStatus.values());
+        dlg.setTitle("Статус");
+        dlg.showAndWait().ifPresent(st -> {
             try {
-                ServiceLocator.getApiClient().updateTaskStatus(selected.getId(), st);
+                ServiceLocator.getApiClient().updateTaskStatus(t.getId(), st);
                 refreshAll();
             } catch (Exception ex) {
-                AlertUtils.error("Оновлення", ex.getMessage());
+                AlertUtils.error("Статус", ex.getMessage());
             }
         });
     }
 
     @FXML
     public void onAddResource(ActionEvent e) {
-        Dialog<ResourceItem> dialog = new Dialog<>();
-        dialog.setTitle("Новий матеріал");
-
-        TextField title = new TextField();
-        TextField url = new TextField();
-        ComboBox<String> type = new ComboBox<>();
-        type.getItems().addAll("link", "file");
-        type.getSelectionModel().select("link");
-
-        GridPane gp = new GridPane();
-        gp.setHgap(10); gp.setVgap(10);
-        gp.addRow(0, new Label("Назва:"), title);
-        gp.addRow(1, new Label("URL/Path:"), url);
-        gp.addRow(2, new Label("Тип:"), type);
-        dialog.getDialogPane().setContent(gp);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        dialog.setResultConverter(bt -> {
-            if (bt == ButtonType.OK) {
-                try {
-                    return ServiceLocator.getApiClient().addResource(group.getId(), ServiceLocator.getCurrentUser().getId(),
-                            title.getText(), type.getValue(), url.getText());
-                } catch (Exception ex) {
-                    AlertUtils.error("Додавання матеріалу", ex.getMessage());
-                    return null;
-                }
-            }
-            return null;
+        TextInputDialog dlg = new TextInputDialog();
+        dlg.setTitle("Новий матеріал");
+        dlg.setHeaderText("Введіть посилання або шлях");
+        dlg.showAndWait().ifPresent(url -> {
+            try {
+                ServiceLocator.getApiClient().addResource(currentGroup.getId(), ServiceLocator.getCurrentUser().getId(), "Material", "link", url);
+                refreshAll();
+            } catch (Exception ex) { AlertUtils.error("Матеріали", ex.getMessage());}
         });
+    }
 
-        Optional<ResourceItem> res = dialog.showAndWait();
-        res.ifPresent(r -> refreshAll());
+    @FXML
+    public void onBack(ActionEvent e) {
+        try {
+            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadHomeScene());
+        } catch (Exception ex) { AlertUtils.error("Навігація", ex.getMessage()); }
     }
 }

@@ -13,17 +13,12 @@ import org.example.cspclient.util.AlertUtils;
 import java.util.List;
 import java.util.Optional;
 
-public class DashboardController {
+public class GroupsController {
 
-    @FXML private Label welcomeLabel;
     @FXML private ListView<Group> groupsList;
 
     @FXML
     public void initialize() {
-        var user = ServiceLocator.getCurrentUser();
-        if (user != null) {
-            welcomeLabel.setText("Вітаю, " + user.getName());
-        }
         refreshGroups();
     }
 
@@ -34,15 +29,6 @@ public class DashboardController {
             groupsList.setItems(items);
         } catch (Exception e) {
             AlertUtils.error("Групи", e.getMessage());
-        }
-    }
-
-    @FXML
-    public void openChats(ActionEvent e) {
-        try {
-            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadHomeScene());
-        } catch (Exception ex) {
-            AlertUtils.error("Навігація", ex.getMessage());
         }
     }
 
@@ -75,21 +61,22 @@ public class DashboardController {
             return null;
         });
 
-        dialog.showAndWait().ifPresent(g -> refreshGroups());
+        Optional<Group> res = dialog.showAndWait();
+        res.ifPresent(g -> refreshGroups());
     }
 
     @FXML
     public void onOpenSelected(ActionEvent e) {
         Group g = groupsList.getSelectionModel().getSelectedItem();
-        if (g == null) { AlertUtils.error("Групи", "Оберіть групу"); return; }
+        if (g == null) {
+            AlertUtils.error("Групи", "Оберіть групу");
+            return;
+        }
         try {
             ServiceLocator.getStage().getProperties().put("selectedGroup", g);
-            ServiceLocator.setScenePreserveBounds(ServiceLocator.getViewManager().loadGroupDetailsScene());
+            ServiceLocator.getStage().setScene(ServiceLocator.getViewManager().loadGroupDetailsScene());
         } catch (Exception ex) {
             AlertUtils.error("Навігація", ex.getMessage());
         }
     }
-
-    @FXML
-    public void onLogout(ActionEvent e) { ServiceLocator.logout(); }
 }

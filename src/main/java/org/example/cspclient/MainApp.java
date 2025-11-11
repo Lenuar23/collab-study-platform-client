@@ -2,6 +2,7 @@ package org.example.cspclient;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.example.cspclient.api.ApiClient;
 import org.example.cspclient.api.MockApiClient;
@@ -11,14 +12,12 @@ import org.example.cspclient.view.ViewManager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 import java.util.Properties;
 
 public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        // Load configuration
         Properties cfg = loadConfig();
         String apiMode = cfg.getProperty("api.mode", "mock");
         String baseUrl = cfg.getProperty("api.baseUrl", "http://localhost:8080");
@@ -35,9 +34,13 @@ public class MainApp extends Application {
         Scene scene = vm.loadLoginScene();
 
         stage.setTitle("Collaborative Study Platform - Client");
+        // App icon
+        try (InputStream is = MainApp.class.getResourceAsStream("/org/example/cspclient/icon.png")) {
+            if (is != null) stage.getIcons().add(new Image(is));
+        }
         stage.setScene(scene);
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
+        stage.setMinWidth(960);
+        stage.setMinHeight(640);
         stage.show();
     }
 
@@ -51,7 +54,5 @@ public class MainApp extends Application {
         return p;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    public static void main(String[] args) { launch(args); }
 }
