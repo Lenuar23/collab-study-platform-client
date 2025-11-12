@@ -7,14 +7,15 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.GroupDetailsController">
     <top>
         <ToolBar styleClass="topbar">
-            <Button text="⟵ Назад" onAction="#onBack"/>
+            <Button text="⟵ Back" onAction="#onBack" styleClass="btn-secondary"/>
             <Separator orientation="VERTICAL"/>
-            <Label fx:id="groupTitle" text="Група" styleClass="title"/>
+            <Label fx:id="groupTitle" text="Group" styleClass="title"/>
             <Pane HBox.hgrow="ALWAYS"/>
             <HBox fx:id="taskButtonsBox" spacing="8">
-                <Button text="Додати завдання" onAction="#onAddTask"/>
-                <Button text="Змінити статус" onAction="#onChangeStatus"/>
-                <Button text="Додати матеріал" onAction="#onAddResource"/>
+                <Button text="Add task" onAction="#onAddTask" styleClass="btn-primary"/>
+                <Button text="Change status" onAction="#onChangeStatus" styleClass="btn-secondary"/>
+                <Button text="Add resource" onAction="#onAddResource" styleClass="btn-secondary"/>
+                <Button text="Settings" onAction="#openSettings" styleClass="btn-secondary"/>
             </HBox>
         </ToolBar>
     </top>
@@ -23,13 +24,13 @@
         <SplitPane dividerPositions="0.5">
             <VBox spacing="8">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                <Label text="Завдання" styleClass="section-title"/>
+                <Label text="Tasks" styleClass="section-title"/>
                 <ListView fx:id="tasksList" VBox.vgrow="ALWAYS"/>
             </VBox>
 
             <VBox spacing="8">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                <Label text="Матеріали" styleClass="section-title"/>
+                <Label text="Resources" styleClass="section-title"/>
                 <ListView fx:id="resourcesList" VBox.vgrow="ALWAYS"/>
             </VBox>
         </SplitPane>
@@ -38,7 +39,7 @@
     <bottom>
         <VBox spacing="8">
             <padding><Insets top="0" right="10" bottom="10" left="10"/></padding>
-            <Label text="Активність" styleClass="section-title"/>
+            <Label text="Activity" styleClass="section-title"/>
             <ListView fx:id="activityList" VBox.vgrow="ALWAYS"/>
         </VBox>
     </bottom>

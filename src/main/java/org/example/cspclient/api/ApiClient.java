@@ -22,10 +22,16 @@ public interface ApiClient {
 
     List<ActivityLog> listActivity(long groupId) throws Exception;
 
-    // --- Chat ---
+    // Chat
     List<Conversation> listConversations(long userId) throws Exception;
     Conversation getOrCreateConversation(long userId, long otherUserId) throws Exception;
     List<ChatMessage> listMessages(long conversationId, int limit) throws Exception;
     ChatMessage sendMessage(long conversationId, long senderId, String content) throws Exception;
     Optional<User> findUserByEmail(String email) throws Exception;
+
+    // New: profile & fetching by id
+    User getUserById(long id) throws Exception;
+    Group getGroupById(long id) throws Exception;
+    User updateUserProfile(long id, String name, String about, String avatarUrl) throws Exception;
+    Group updateGroupProfile(long id, String name, String description, String avatarUrl) throws Exception;
 }

@@ -19,6 +19,10 @@ import org.example.cspclient.model.Conversation;
 import org.example.cspclient.model.User;
 import org.example.cspclient.util.AlertUtils;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -41,17 +45,36 @@ public class ChatController {
         messagesList.setItems(messages);
 
         conversationsList.setCellFactory(list -> new ListCell<>() {
+            private final HBox box = new HBox(10);
+            private final ImageView avatar = new ImageView();
+            private final Label name = new Label();
+            {
+                box.setAlignment(Pos.CENTER_LEFT);
+                avatar.setFitWidth(28); avatar.setFitHeight(28); avatar.setPreserveRatio(true);
+                box.getChildren().addAll(avatar, name);
+            }
             @Override protected void updateItem(Conversation c, boolean empty) {
                 super.updateItem(c, empty);
-                if (empty || c == null) {
-                    setText(null);
-                    setGraphic(null);
-                    return;
-                }
+                if (empty || c == null) { setGraphic(null); return; }
                 long me = ServiceLocator.getCurrentUser().getId();
-                long otherId = c.getUserAId() == me ? c.getUserBId() : c.getUserAId();
-                setText("User " + otherId + (c.getLastMessageAt() != null ? "\n" + c.getLastMessageAt().toString() : ""));
-                getStyleClass().add("conv-cell");
+                long otherId = (c.getUserAId() == me) ? c.getUserBId() : c.getUserAId();
+                try {
+                    User other = ServiceLocator.getApiClient().getUserById(otherId);
+                    name.setText(other.getName() != null ? other.getName() : other.getEmail());
+                    String url = other.getAvatarUrl();
+                    if (url == null || url.isBlank()) {
+                        // initials-like placeholder: use app icon for now
+                        avatar.setImage(new Image(ChatController.class.getResourceAsStream("/org/example/cspclient/icon.png")));
+                    } else if (url.startsWith("resource:/")) {
+                        avatar.setImage(new Image(ChatController.class.getResourceAsStream(url.replace("resource:", ""))));
+                    } else {
+                        avatar.setImage(new Image(new File(url).toURI().toString()));
+                    }
+                } catch (Exception e) {
+                    name.setText("User " + otherId);
+                    avatar.setImage(new Image(ChatController.class.getResourceAsStream("/org/example/cspclient/icon.png")));
+                }
+                setGraphic(box);
             }
         });
 
@@ -62,7 +85,6 @@ public class ChatController {
             private final Region spacer = new Region();
             {
                 bubble.setWrapText(true);
-                // bind bubble width to ~65% of list width
                 bubble.maxWidthProperty().bind(list.widthProperty().multiply(0.65));
                 time.getStyleClass().add("msg-time");
                 HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -71,15 +93,11 @@ public class ChatController {
             @Override protected void updateItem(ChatMessage m, boolean empty) {
                 super.updateItem(m, empty);
                 box.getChildren().clear();
-                if (empty || m == null) {
-                    setGraphic(null);
-                    return;
-                }
+                if (empty || m == null) { setGraphic(null); return; }
                 boolean mine = m.getSenderId() == ServiceLocator.getCurrentUser().getId();
                 bubble.setText(m.getContent());
                 bubble.getStyleClass().setAll("bubble", mine ? "mine" : "other");
                 time.setText(m.getTimestamp().format(DateTimeFormatter.ofPattern("HH:mm")));
-
                 if (mine) {
                     box.setAlignment(Pos.CENTER_RIGHT);
                     box.getChildren().addAll(time, bubble);
@@ -106,11 +124,9 @@ public class ChatController {
             long me = ServiceLocator.getCurrentUser().getId();
             List<Conversation> list = ServiceLocator.getApiClient().listConversations(me);
             conversations.setAll(list);
-            if (!list.isEmpty()) {
-                conversationsList.getSelectionModel().select(0);
-            }
+            if (!list.isEmpty()) conversationsList.getSelectionModel().select(0);
         } catch (Exception ex) {
-            AlertUtils.error("Чати", ex.getMessage());
+            AlertUtils.error("Chats", ex.getMessage());
         }
     }
 
@@ -125,48 +141,36 @@ public class ChatController {
             List<ChatMessage> list = ServiceLocator.getApiClient().listMessages(currentConv.getId(), 100);
             messages.setAll(list);
             messagesList.scrollTo(messages.size() - 1);
-        } catch (Exception ex) {
-            // silent in polling
-        }
+        } catch (Exception ex) { /* ignore in polling */ }
     }
 
     @FXML
     public void onSend(ActionEvent e) {
-        if (currentConv == null) {
-            AlertUtils.error("Чат", "Оберіть діалог або створіть новий");
-            return;
-        }
+        if (currentConv == null) { AlertUtils.error("Chat", "Select or create a conversation"); return; }
         String text = inputField.getText();
         if (text == null || text.isBlank()) return;
         try {
             ServiceLocator.getApiClient().sendMessage(currentConv.getId(), ServiceLocator.getCurrentUser().getId(), text.trim());
             inputField.clear();
             refreshMessages();
-        } catch (Exception ex) {
-            AlertUtils.error("Надсилання", ex.getMessage());
-        }
+        } catch (Exception ex) { AlertUtils.error("Send", ex.getMessage()); }
     }
 
     @FXML
     public void onNewChat(ActionEvent e) {
         TextInputDialog dlg = new TextInputDialog();
-        dlg.setTitle("Новий чат");
-        dlg.setHeaderText("Введи email співрозмовника");
+        dlg.setTitle("New chat");
+        dlg.setHeaderText("Enter partner email");
         Optional<String> res = dlg.showAndWait();
         res.ifPresent(email -> {
             try {
                 var opt = ServiceLocator.getApiClient().findUserByEmail(email.trim());
-                if (opt.isEmpty()) {
-                    AlertUtils.error("Новий чат", "Користувача не знайдено");
-                    return;
-                }
+                if (opt.isEmpty()) { AlertUtils.error("New chat", "User not found"); return; }
                 User other = opt.get();
                 Conversation c = ServiceLocator.getApiClient().getOrCreateConversation(ServiceLocator.getCurrentUser().getId(), other.getId());
                 loadConversations();
                 conversationsList.getSelectionModel().select(c);
-            } catch (Exception ex) {
-                AlertUtils.error("Новий чат", ex.getMessage());
-            }
+            } catch (Exception ex) { AlertUtils.error("New chat", ex.getMessage()); }
         });
     }
 }

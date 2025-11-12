@@ -6,12 +6,15 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.ChatController" styleClass="chat-root">
     <center>
-        <SplitPane dividerPositions="0.28">
+        <SplitPane dividerPositions="0.30">
+            <!-- Left: conversations -->
             <VBox spacing="8" styleClass="left-pane">
                 <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                <Label text="Діалоги" styleClass="section-title"/>
+                <Label text="Conversations" styleClass="section-title"/>
                 <ListView fx:id="conversationsList" VBox.vgrow="ALWAYS" styleClass="conversation-list"/>
             </VBox>
+
+            <!-- Right: messages -->
             <BorderPane styleClass="right-pane">
                 <center>
                     <ListView fx:id="messagesList" styleClass="messages-list"/>
@@ -19,9 +22,9 @@
                 <bottom>
                     <HBox spacing="10" alignment="CENTER_LEFT" styleClass="input-bar">
                         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <TextField fx:id="inputField" HBox.hgrow="ALWAYS" promptText="Напишіть повідомлення..."/>
-                        <Button text="Надіслати" onAction="#onSend"/>
-                        <Button text="Новий чат" onAction="#onNewChat"/>
+                        <TextField fx:id="inputField" HBox.hgrow="ALWAYS" promptText="Write a message..."/>
+                        <Button text="Send" onAction="#onSend" styleClass="btn-primary"/>
+                        <Button text="New chat" onAction="#onNewChat" styleClass="btn-secondary"/>
                     </HBox>
                 </bottom>
             </BorderPane>

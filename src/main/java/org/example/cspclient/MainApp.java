@@ -1,58 +1,33 @@
 package org.example.cspclient;
 
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import org.example.cspclient.api.ApiClient;
-import org.example.cspclient.api.MockApiClient;
-import org.example.cspclient.api.RestApiClient;
-import org.example.cspclient.di.ServiceLocator;
 import org.example.cspclient.view.ViewManager;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import org.example.cspclient.di.ServiceLocator;
 
 public class MainApp extends Application {
 
     @Override
-    public void start(Stage stage) throws Exception {
-        Properties cfg = loadConfig();
-        String apiMode = cfg.getProperty("api.mode", "mock");
-        String baseUrl = cfg.getProperty("api.baseUrl", "http://localhost:8080");
-
-        ApiClient api = "rest".equalsIgnoreCase(apiMode)
-                ? new RestApiClient(baseUrl)
-                : new MockApiClient();
-
-        ServiceLocator.setApiClient(api);
-        ServiceLocator.setStage(stage);
-
+    public void start(Stage primaryStage) throws Exception {
         ViewManager vm = new ViewManager();
-        ServiceLocator.setViewManager(vm);
-        Scene scene = vm.loadLoginScene();
+        ServiceLocator.init(primaryStage, vm);
 
-        stage.setTitle("Collaborative Study Platform - Client");
-        // App icon
-        try (InputStream is = MainApp.class.getResourceAsStream("/org/example/cspclient/icon.png")) {
-            if (is != null) stage.getIcons().add(new Image(is));
-        }
-        stage.setScene(scene);
-        stage.setMinWidth(960);
-        stage.setMinHeight(640);
-        stage.show();
+        primaryStage.setTitle("Collaborative Study Platform - Client");
+        primaryStage.setScene(vm.loadLoginScene());
+
+        // Start maximized (windowed fullscreen)
+        primaryStage.setMaximized(true);
+
+        try {
+            Image icon = new Image(MainApp.class.getResourceAsStream("/org/example/cspclient/icon.png"));
+            primaryStage.getIcons().add(icon);
+        } catch (Exception ignore) {}
+
+        primaryStage.show();
     }
 
-    private Properties loadConfig() throws IOException {
-        Properties p = new Properties();
-        try (InputStream is = MainApp.class.getResourceAsStream("/org/example/cspclient/config.properties")) {
-            if (is != null) {
-                p.load(is);
-            }
-        }
-        return p;
+    public static void main(String[] args) {
+        launch(args);
     }
-
-    public static void main(String[] args) { launch(args); }
 }

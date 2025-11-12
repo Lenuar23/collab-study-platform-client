@@ -14,22 +14,26 @@ public class ViewManager {
     public Scene loadRegisterScene() throws IOException { return loadScene("/org/example/cspclient/view/register.fxml"); }
     public Scene loadHomeScene() throws IOException { return loadScene("/org/example/cspclient/view/home.fxml"); }
     public Scene loadGroupDetailsScene() throws IOException { return loadScene("/org/example/cspclient/view/group_details.fxml"); }
+    public Scene loadUserSettingsScene() throws IOException { return loadScene("/org/example/cspclient/view/user_settings.fxml"); }
+    public Scene loadGroupSettingsScene() throws IOException { return loadScene("/org/example/cspclient/view/group_settings.fxml"); }
 
     private Scene loadScene(String resource) throws IOException {
-        URL url = MainApp.class.getResource(resource);
-        if (url == null) {
-            throw new IOException("FXML not found: " + resource + " (check path under src/main/resources)");
+        try {
+            URL url = MainApp.class.getResource(resource);
+            if (url == null) throw new IOException("FXML not found: " + resource);
+            FXMLLoader loader = new FXMLLoader(url);
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            URL css = MainApp.class.getResource("/org/example/cspclient/application.css");
+            if (css != null) scene.getStylesheets().add(css.toExternalForm());
+            return scene;
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            // bubble up the best message for AlertUtils
+            IOException io = new IOException("Failed to load " + resource + ": " + (e.getMessage() != null ? e.getMessage() : e.getClass().getName()));
+            io.initCause(e);
+            throw io;
         }
-        FXMLLoader loader = new FXMLLoader(url);
-        Parent root = loader.load();
-        Scene scene = new Scene(root);
-
-        URL css = MainApp.class.getResource("/org/example/cspclient/application.css");
-        if (css != null) {
-            scene.getStylesheets().add(css.toExternalForm());
-        } else {
-            System.err.println("WARN: application.css not found at /org/example/cspclient/application.css");
-        }
-        return scene;
     }
 }

@@ -1,51 +1,61 @@
 package org.example.cspclient.di;
 
+import javafx.application.Platform;
+import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.example.cspclient.api.ApiClient;
-import org.example.cspclient.model.User;
 import org.example.cspclient.view.ViewManager;
+import org.example.cspclient.api.ApiClient;
+import org.example.cspclient.api.MockApiClient;
+import org.example.cspclient.model.User;
 
 public class ServiceLocator {
-    private static ApiClient apiClient;
+
     private static Stage stage;
     private static ViewManager viewManager;
+    private static ApiClient api = new MockApiClient();
     private static User currentUser;
 
-    public static ApiClient getApiClient() { return apiClient; }
-    public static void setApiClient(ApiClient api) { apiClient = api; }
+    public static void init(Stage s, ViewManager vm) {
+        stage = s;
+        viewManager = vm;
+    }
 
     public static Stage getStage() { return stage; }
-    public static void setStage(Stage st) { stage = st; }
-
     public static ViewManager getViewManager() { return viewManager; }
-    public static void setViewManager(ViewManager vm) { viewManager = vm; }
+    public static ApiClient getApiClient() { return api; }
+    public static void setApiClient(ApiClient a) { api = a; }
 
     public static User getCurrentUser() { return currentUser; }
     public static void setCurrentUser(User u) { currentUser = u; }
 
-    /** Switch scene but keep window size/position and maximized state (Windows-safe) */
-    public static void setScenePreserveBounds(Scene scene) {
+    /** Prefer reusing the same Scene to keep maximized state. */
+    public static void setScenePreserveBounds(Scene newScene) {
         if (stage == null) return;
-        boolean wasMax = stage.isMaximized();
-        double w = stage.getWidth();
-        double h = stage.getHeight();
-        double x = stage.getX();
-        double y = stage.getY();
+        final boolean wasMax = stage.isMaximized();
 
-        // Switch scene first
-        stage.setScene(scene);
+        if (stage.getScene() != null) {
+            // Reuse existing scene and detach incoming root to avoid "already set as root of another scene"
+            copyScene(stage.getScene(), newScene);
+        } else {
+            stage.setScene(newScene);
+        }
 
         if (wasMax) {
-            // If it was maximized, do NOT touch size/position — just restore maximized
             stage.setMaximized(true);
-        } else {
-            // Restore previous bounds for windowed mode
-            stage.setX(x);
-            stage.setY(y);
-            stage.setWidth(w);
-            stage.setHeight(h);
+            Platform.runLater(() -> stage.setMaximized(true));
         }
+    }
+
+    /** Copy root and stylesheets from newScene into existing scene. */
+    private static void copyScene(Scene existing, Scene incoming) {
+        Parent incomingRoot = incoming.getRoot();
+        // Detach the root from its original scene before reusing
+        incoming.setRoot(new Group());
+        existing.setRoot(incomingRoot);
+        existing.getStylesheets().setAll(incoming.getStylesheets());
+        existing.getRoot().applyCss();
     }
 
     public static void logout() {

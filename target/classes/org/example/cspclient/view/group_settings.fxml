@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.GroupSettingsController">
+    <top>
+        <ToolBar styleClass="topbar">
+            <Label text="Group Settings" styleClass="title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="Close" onAction="#onClose" styleClass="btn-secondary"/>
+        </ToolBar>
+    </top>
+    <center>
+        <GridPane hgap="16" vgap="16">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" minWidth="140"/>
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="320"/>
+            </columnConstraints>
+
+            <Label text="Avatar:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <HBox spacing="12" GridPane.rowIndex="0" GridPane.columnIndex="1" alignment="CENTER_LEFT">
+                <ImageView fx:id="avatarView" fitWidth="80" fitHeight="80" preserveRatio="true" smooth="true"/>
+                <Button text="Choose..." onAction="#onPickAvatar" styleClass="btn-secondary"/>
+            </HBox>
+
+            <Label text="Group name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="nameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <Label text="Description:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextArea fx:id="descriptionField" GridPane.rowIndex="2" GridPane.columnIndex="1" prefRowCount="4"/>
+
+            <HBox spacing="10" GridPane.rowIndex="3" GridPane.columnIndex="1" alignment="CENTER_LEFT">
+                <Button text="Save" onAction="#onSave" styleClass="btn-primary"/>
+                <Button text="Cancel" onAction="#onClose" styleClass="btn-secondary"/>
+            </HBox>
+        </GridPane>
+    </center>
+</BorderPane>
