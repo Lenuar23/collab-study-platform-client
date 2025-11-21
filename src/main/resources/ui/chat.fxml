@@ -24,23 +24,47 @@
                 <TextField fx:id="directUserIdField" promptText="Other user ID" HBox.hgrow="ALWAYS"/>
                 <Button text="Open" onAction="#onOpenDirectChat"/>
             </HBox>
+
+            <Separator/>
+
+            <Label text="Create group chat"/>
+            <TextField fx:id="groupNameField" promptText="Group name (optional)"/>
+            <TextField fx:id="groupParticipantsField" promptText="Participant IDs (comma separated)"/>
+            <Button text="Create group" onAction="#onCreateGroup"/>
         </VBox>
     </left>
 
     <center>
         <BorderPane>
             <top>
-                <HBox spacing="5.0" alignment="CENTER_LEFT">
+                <HBox spacing="8.0" alignment="CENTER_LEFT">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
                     <Label text="Conversation:"/>
                     <Label fx:id="activeConversationLabel" text="None"/>
+                    <Button text="Stats" onAction="#onShowStats"/>
+                    <Button text="Delete selected" onAction="#onDeleteMessage"/>
+                    <Button text="Edit selected" onAction="#onEditMessage"/>
+                    <Button text="Participants" onAction="#onShowParticipants"/>
+                    <TextField fx:id="addParticipantField" promptText="Add user ID"/>
+                    <Button text="Add" onAction="#onAddParticipant"/>
                 </HBox>
             </top>
 
             <center>
-                <ListView fx:id="messagesList"/>
+                <VBox spacing="5.0">
+                    <HBox spacing="5.0">
+                        <padding>
+                            <Insets top="0" right="10" bottom="0" left="10"/>
+                        </padding>
+                        <TextField fx:id="searchField" promptText="Search in messages" HBox.hgrow="ALWAYS"/>
+                        <Button text="Search" onAction="#onSearch"/>
+                        <Button text="Clear" onAction="#onClearSearch"/>
+                    </HBox>
+
+                    <ListView fx:id="messagesList" VBox.vgrow="ALWAYS"/>
+                </VBox>
             </center>
 
             <bottom>

@@ -26,6 +26,13 @@ public class ApiClient {
         return base + "/" + path;
     }
 
+    private static void addAuthHeader(HttpRequest.Builder builder) {
+        String token = SessionStore.getToken();
+        if (token != null && !token.isBlank()) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+    }
+
     public static <T> T post(String path, Object body, Class<T> responseType) throws IOException, InterruptedException {
         String url = buildUrl(path);
         String jsonBody = objectMapper.writeValueAsString(body);
@@ -35,10 +42,34 @@ public class ApiClient {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8));
 
-        String token = SessionStore.getToken();
-        if (token != null && !token.isBlank()) {
-            builder.header("Authorization", "Bearer " + token);
+        addAuthHeader(builder);
+
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        int status = response.statusCode();
+        String responseBody = response.body();
+
+        if (status >= 200 && status < 300) {
+            if (responseType == Void.class || responseBody == null || responseBody.isBlank()) {
+                return null;
+            }
+            return objectMapper.readValue(responseBody, responseType);
+        } else {
+            throw new IOException("HTTP " + status + ": " + responseBody);
         }
+    }
+
+    public static <T> T patch(String path, Object body, Class<T> responseType) throws IOException, InterruptedException {
+        String url = buildUrl(path);
+        String jsonBody = objectMapper.writeValueAsString(body);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8));
+
+        addAuthHeader(builder);
 
         HttpRequest request = builder.build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -63,10 +94,7 @@ public class ApiClient {
                 .uri(URI.create(url))
                 .GET();
 
-        String token = SessionStore.getToken();
-        if (token != null && !token.isBlank()) {
-            builder.header("Authorization", "Bearer " + token);
-        }
+        addAuthHeader(builder);
 
         HttpRequest request = builder.build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -80,6 +108,26 @@ public class ApiClient {
             }
             return objectMapper.readValue(responseBody, responseType);
         } else {
+            throw new IOException("HTTP " + status + ": " + responseBody);
+        }
+    }
+
+    public static void delete(String path) throws IOException, InterruptedException {
+        String url = buildUrl(path);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .DELETE();
+
+        addAuthHeader(builder);
+
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        int status = response.statusCode();
+        String responseBody = response.body();
+
+        if (status < 200 || status >= 300) {
             throw new IOException("HTTP " + status + ": " + responseBody);
         }
     }
