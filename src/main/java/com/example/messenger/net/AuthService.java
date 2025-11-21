@@ -2,7 +2,9 @@ package com.example.messenger.net;
 
 import com.example.messenger.dto.AuthRequest;
 import com.example.messenger.dto.AuthResponse;
+import com.example.messenger.dto.RegisterRequest;
 import com.example.messenger.store.SessionStore;
+
 import java.io.IOException;
 
 public class AuthService {
@@ -16,5 +18,10 @@ public class AuthService {
         }
 
         return response;
+    }
+
+    public void register(String name, String email, String password) throws IOException, InterruptedException {
+        RegisterRequest request = new RegisterRequest(name, email, password);
+        ApiClient.post("/auth/register", request, Void.class);
     }
 }

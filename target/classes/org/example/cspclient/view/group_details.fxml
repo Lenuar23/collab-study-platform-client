@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.cspclient.controller.GroupDetailsController">
+    <top>
+        <ToolBar styleClass="topbar">
+            <Button text="⟵ Back" onAction="#onBack" styleClass="btn-secondary"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="groupTitle" text="Group" styleClass="title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <HBox fx:id="taskButtonsBox" spacing="8">
+                <Button text="Add task" onAction="#onAddTask" styleClass="btn-primary"/>
+                <Button text="Change status" onAction="#onChangeStatus" styleClass="btn-secondary"/>
+                <Button text="Add resource" onAction="#onAddResource" styleClass="btn-secondary"/>
+                <Button text="Settings" onAction="#openSettings" styleClass="btn-secondary"/>
+            </HBox>
+        </ToolBar>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <VBox spacing="8">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <Label text="Tasks" styleClass="section-title"/>
+                <ListView fx:id="tasksList" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <VBox spacing="8">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <Label text="Resources" styleClass="section-title"/>
+                <ListView fx:id="resourcesList" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="8">
+            <padding><Insets top="0" right="10" bottom="10" left="10"/></padding>
+            <Label text="Activity" styleClass="section-title"/>
+            <ListView fx:id="activityList" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </bottom>
+</BorderPane>

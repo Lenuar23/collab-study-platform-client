@@ -4,9 +4,12 @@ import com.example.messenger.net.AuthService;
 import com.example.messenger.dto.AuthResponse;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 public class LoginController {
 
@@ -30,34 +33,47 @@ public class LoginController {
 
         try {
             AuthResponse response = authService.login(email, password);
-            System.out.println("Logged in! User ID = " + response.getUserId()
-                    + ", token = " + response.getToken());
-
-            showInfo("Login successful!");
-
+            openChatScreen();
         } catch (Exception e) {
-            e.printStackTrace();
             showError("Login failed: " + e.getMessage());
         }
     }
 
     @FXML
     protected void onGoToRegister(ActionEvent event) {
-        showInfo("Register screen is not implemented yet.");
+        openRegisterScreen();
+    }
+
+    private void openChatScreen() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat.fxml"));
+            Scene scene = new Scene(loader.load());
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Messenger - Chat");
+            stage.show();
+        } catch (Exception e) {
+            showError("Unable to open chat screen: " + e.getMessage());
+        }
+    }
+
+    private void openRegisterScreen() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/register.fxml"));
+            Scene scene = new Scene(loader.load());
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Messenger - Register");
+            stage.show();
+        } catch (Exception e) {
+            showError("Unable to open register screen: " + e.getMessage());
+        }
     }
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText("Login error");
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
