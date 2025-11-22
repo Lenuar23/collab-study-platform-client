@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.messenger.ui.controllers.GroupsController">
+
+    <top>
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Groups"/>
+            <Button text="Refresh" onAction="#onRefreshGroups"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ListView fx:id="groupsList"/>
+    </center>
+
+    <right>
+        <ScrollPane fitToWidth="true">
+            <content>
+                <VBox spacing="8.0">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+
+                    <!-- Selected group details -->
+                    <Label text="Selected group"/>
+                    <Label fx:id="selectedGroupLabel" text="No group selected"/>
+                    <Label fx:id="groupIdLabel" text="ID: -"/>
+                    <Label fx:id="groupOwnerLabel" text="Owner: -"/>
+                    <Label fx:id="groupCreatedAtLabel" text="Created: -"/>
+
+                    <TextField fx:id="editNameField" promptText="Group name"/>
+                    <TextField fx:id="editDescriptionField" promptText="Description"/>
+                    <TextField fx:id="editAvatarField" promptText="Avatar URL"/>
+                    <HBox spacing="5.0">
+                        <Button text="Save name/description" onAction="#onSaveGroupChanges"/>
+                        <Button text="Update avatar" onAction="#onUpdateAvatar"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <Label text="Members"/>
+                    <ListView fx:id="membersList" prefHeight="150"/>
+
+                    <HBox spacing="5.0">
+                        <TextField fx:id="addMemberField" promptText="User ID" HBox.hgrow="ALWAYS"/>
+                        <Button text="Add" onAction="#onAddMember"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- Create group section -->
+                    <Label text="Create new group"/>
+                    <TextField fx:id="nameField" promptText="Group name"/>
+                    <TextField fx:id="descriptionField" promptText="Description (optional)"/>
+                    <TextField fx:id="avatarField" promptText="Avatar URL (optional)"/>
+                    <Button text="Create" onAction="#onCreateGroup"/>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </right>
+</BorderPane>

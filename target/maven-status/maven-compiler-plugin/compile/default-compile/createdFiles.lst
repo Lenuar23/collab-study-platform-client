@@ -1,9 +1,11 @@
 com\example\messenger\dto\ConversationSummary.class
+com\example\messenger\ui\controllers\GroupsController.class
 org\example\cspclient\api\RestApiClient.class
 com\example\messenger\dto\MessageDto.class
 org\example\cspclient\model\TaskItem.class
 org\example\cspclient\ui\TwoLineListCell.class
 com\example\messenger\config\Env.class
+com\example\messenger\dto\UserDto.class
 org\example\cspclient\api\MockApiClient.class
 org\example\cspclient\util\AlertUtils.class
 org\example\cspclient\view\ViewManager.class
@@ -13,9 +15,12 @@ com\example\messenger\dto\ConversationDto.class
 org\example\cspclient\model\TaskStatus.class
 com\example\messenger\dto\AddParticipantRequest.class
 org\example\cspclient\controller\UserSettingsController.class
+com\example\messenger\net\HealthService.class
+com\example\messenger\net\UserService.class
 org\example\cspclient\controller\RegisterController.class
 com\example\messenger\ui\controllers\ChatController.class
 org\example\cspclient\controller\ChatController.class
+com\example\messenger\net\GroupService.class
 org\example\cspclient\controller\GroupDetailsController$1.class
 com\example\messenger\dto\SendMessageRequest.class
 com\example\messenger\store\SessionStore.class
@@ -26,6 +31,7 @@ org\example\cspclient\controller\GroupDetailsController.class
 com\example\messenger\dto\AuthRequest.class
 com\example\messenger\dto\ConversationDetailsResponse.class
 com\example\messenger\dto\AuthResponse.class
+com\example\messenger\dto\GroupDto.class
 com\example\messenger\dto\CreateConversationResponse.class
 org\example\cspclient\di\ServiceLocator.class
 org\example\cspclient\model\ActivityLog.class
@@ -35,6 +41,7 @@ com\example\messenger\dto\UpdateMessageRequest.class
 org\example\cspclient\model\ChatMessage.class
 org\example\cspclient\controller\GroupsController$1.class
 org\example\cspclient\model\Group.class
+com\example\messenger\ui\controllers\UserProfileController.class
 com\example\messenger\dto\ConversationDetailsResponse$ParticipantInfo.class
 module-info.class
 org\example\cspclient\controller\GroupDetailsController$3.class
@@ -42,6 +49,7 @@ org\example\cspclient\controller\ChatController$1.class
 org\example\cspclient\controller\LoginController.class
 com\example\messenger\net\ConversationService.class
 org\example\cspclient\controller\HomeController.class
+com\example\messenger\dto\UpdateUserProfileRequest.class
 com\example\messenger\dto\UpdateReadReceiptRequest.class
 com\example\messenger\App.class
 com\example\messenger\dto\CreateDirectConversationRequest.class
@@ -49,8 +57,10 @@ org\example\cspclient\api\ApiClient.class
 org\example\cspclient\controller\GroupsController.class
 org\example\cspclient\model\Conversation.class
 org\example\cspclient\util\Validation.class
+com\example\messenger\dto\UpdateGroupAvatarRequest.class
 org\example\cspclient\MainApp.class
 com\example\messenger\dto\CreateGroupConversationRequest.class
+com\example\messenger\dto\CreateGroupRequest.class
 org\example\cspclient\controller\DashboardController.class
 org\example\cspclient\model\User.class
 org\example\cspclient\ui\LastMessageProvider.class

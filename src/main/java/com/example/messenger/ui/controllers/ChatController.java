@@ -10,6 +10,16 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import com.example.messenger.config.Env;
+import com.example.messenger.dto.UserDto;
+import com.example.messenger.net.AuthService;
+import com.example.messenger.net.UserService;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.util.*;
 
@@ -42,13 +52,24 @@ public class ChatController {
     @FXML
     private Label activeConversationLabel;
 
-    private final MessageService messageService = new MessageService();
-    private final ConversationService conversationService = new ConversationService();
+@FXML
+private Label currentUserLabel;
 
-    private final ObservableList<ConversationItem> conversations = FXCollections.observableArrayList();
+@FXML
+private ImageView currentUserAvatar;
 
-    private Long activeConversationId = null;
-    private List<MessageDto> currentMessages = new ArrayList<>();
+private final MessageService messageService = new MessageService();
+private final ConversationService conversationService = new ConversationService();
+
+private final AuthService authService = new AuthService();
+private final UserService userService = new UserService();
+
+private final ObservableList<ConversationItem> conversations = FXCollections.observableArrayList();
+
+private Long activeConversationId = null;
+private List<MessageDto> currentMessages = new ArrayList<>();
+
+private UserDto currentUser;
 
     @FXML
     private void initialize() {
@@ -61,6 +82,7 @@ public class ChatController {
             }
         });
 
+        loadCurrentUser();
         loadUserConversations();
     }
 
@@ -475,4 +497,104 @@ public class ChatController {
             return getTitle();
         }
     }
+private void loadCurrentUser() {
+    try {
+        currentUser = authService.getCurrentUser();
+        refreshUserHeader();
+    } catch (Exception e) {
+        e.printStackTrace();
+        if (currentUserLabel != null) {
+            currentUserLabel.setText("Error loading user");
+        }
+    }
+}
+
+private void refreshUserHeader() {
+    if (currentUserLabel == null || currentUserAvatar == null) {
+        return;
+    }
+
+    if (currentUser == null) {
+        currentUserLabel.setText("Not logged in");
+        currentUserAvatar.setImage(null);
+        return;
+    }
+
+    currentUserLabel.setText(currentUser.getName() + " (id: " + currentUser.getUserId() + ")");
+
+    String avatarUrl = currentUser.getAvatarUrl();
+    if (avatarUrl == null || avatarUrl.isBlank()) {
+        currentUserAvatar.setImage(null);
+        return;
+    }
+
+    String url = avatarUrl;
+    try {
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            String apiBase = Env.API_BASE_URL;
+            String root = apiBase;
+            int idx = apiBase.indexOf("/api");
+            if (idx > 0) {
+                root = apiBase.substring(0, idx);
+            }
+            if (!url.startsWith("/")) {
+                url = "/" + url;
+            }
+            url = root + url;
+        }
+
+        Image image = new Image(url, true);
+        currentUserAvatar.setImage(image);
+    } catch (IllegalArgumentException ex) {
+        System.err.println("Failed to load header avatar from '" + avatarUrl + "': " + ex.getMessage());
+        currentUserAvatar.setImage(null);
+    }
+}
+
+@FXML
+private void onLogout(ActionEvent event) {
+    try {
+        authService.logout();
+        Stage stage = (Stage) conversationsList.getScene().getWindow();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/login.fxml"));
+        Scene scene = new Scene(loader.load());
+        stage.setScene(scene);
+        stage.setTitle("Messenger - Login");
+    } catch (Exception e) {
+        e.printStackTrace();
+        showError("Logout failed: " + e.getMessage());
+    }
+}
+
+@FXML
+private void onOpenProfile(ActionEvent event) {
+    if (currentUser == null) {
+        return;
+    }
+
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user_profile.fxml"));
+        Scene scene = new Scene(loader.load());
+        Stage stage = new Stage();
+        stage.setTitle("User profile");
+        stage.setScene(scene);
+        stage.initOwner(conversationsList.getScene().getWindow());
+
+        Object controller = loader.getController();
+        if (controller instanceof UserProfileController upc) {
+            upc.setUserAndServices(currentUser, userService, this::onUserUpdated);
+        }
+
+        stage.showAndWait();
+    } catch (Exception e) {
+        e.printStackTrace();
+        showError("Failed to open profile: " + e.getMessage());
+    }
+}
+
+private void onUserUpdated(UserDto updatedUser) {
+    this.currentUser = updatedUser;
+    refreshUserHeader();
+}
+
 }

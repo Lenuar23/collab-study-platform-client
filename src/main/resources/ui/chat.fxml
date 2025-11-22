@@ -2,11 +2,33 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.messenger.ui.controllers.ChatController">
+    <top>
+        <HBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="5" right="10" bottom="5" left="10"/>
+            </padding>
+
+            <ImageView fx:id="currentUserAvatar"
+                       fitWidth="32.0"
+                       fitHeight="32.0"
+                       preserveRatio="true"/>
+
+            <Label text="Logged in as:"/>
+            <Label fx:id="currentUserLabel" text="(loading...)"/>
+
+            <Pane HBox.hgrow="ALWAYS"/>
+
+            <Button text="Profile" onAction="#onOpenProfile"/>
+            <Button text="Logout" onAction="#onLogout"/>
+        </HBox>
+    </top>
+
 
     <left>
         <VBox spacing="8.0">
