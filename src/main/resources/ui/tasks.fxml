@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.messenger.ui.controllers.TasksController">
+
+    <top>
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label fx:id="groupTitleLabel" text="Tasks"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Label text="Group ID:"/>
+            <TextField fx:id="groupIdField" prefWidth="100" editable="false"/>
+            <Button text="Load tasks" onAction="#onLoadTasks"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ListView fx:id="tasksList"/>
+    </center>
+
+    <right>
+        <ScrollPane fitToWidth="true">
+            <content>
+                <VBox spacing="8.0">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+
+                    <Label text="Create task"/>
+                    <TextField fx:id="newTitleField" promptText="Title"/>
+                    <TextField fx:id="newDueDateField" promptText="Due date (YYYY-MM-DD, optional)"/>
+                    <TextArea fx:id="newDescriptionArea" promptText="Description (optional)" prefRowCount="3"/>
+                    <Button text="Create" onAction="#onCreateTask"/>
+
+                    <Separator/>
+
+                    <Label text="Assign user to selected task"/>
+                    <TextField fx:id="assignUserIdField" promptText="User ID"/>
+                    <Button text="Assign" onAction="#onAssignUser"/>
+
+                    <Separator/>
+
+                    <Label text="Progress for selected task"/>
+                    <Button text="Load progress" onAction="#onLoadProgress"/>
+
+                    <Separator/>
+
+                    <Label text="Update status"/>
+                    <TextField fx:id="statusUserIdField" promptText="User ID (empty = current user)"/>
+                    <ComboBox fx:id="statusCombo" prefWidth="160"/>
+                    <Button text="Update status" onAction="#onUpdateStatus"/>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </right>
+
+    <bottom>
+        <VBox spacing="4.0">
+            <padding>
+                <Insets top="5" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Task progress"/>
+            <ListView fx:id="progressList" prefHeight="120"/>
+        </VBox>
+    </bottom>
+</BorderPane>

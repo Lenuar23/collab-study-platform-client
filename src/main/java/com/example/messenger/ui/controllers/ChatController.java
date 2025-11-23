@@ -9,17 +9,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import com.example.messenger.config.Env;
-import com.example.messenger.dto.UserDto;
-import com.example.messenger.net.AuthService;
-import com.example.messenger.net.UserService;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.*;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 import java.util.*;
 
@@ -52,24 +46,13 @@ public class ChatController {
     @FXML
     private Label activeConversationLabel;
 
-@FXML
-private Label currentUserLabel;
+    private final MessageService messageService = new MessageService();
+    private final ConversationService conversationService = new ConversationService();
 
-@FXML
-private ImageView currentUserAvatar;
+    private final ObservableList<ConversationItem> conversations = FXCollections.observableArrayList();
 
-private final MessageService messageService = new MessageService();
-private final ConversationService conversationService = new ConversationService();
-
-private final AuthService authService = new AuthService();
-private final UserService userService = new UserService();
-
-private final ObservableList<ConversationItem> conversations = FXCollections.observableArrayList();
-
-private Long activeConversationId = null;
-private List<MessageDto> currentMessages = new ArrayList<>();
-
-private UserDto currentUser;
+    private Long activeConversationId = null;
+    private List<MessageDto> currentMessages = new ArrayList<>();
 
     @FXML
     private void initialize() {
@@ -82,7 +65,6 @@ private UserDto currentUser;
             }
         });
 
-        loadCurrentUser();
         loadUserConversations();
     }
 
@@ -95,22 +77,23 @@ private UserDto currentUser;
             }
 
             for (ConversationSummary s : summaries) {
-                Long convId = s.getConversationId();
-                if (convId == null) {
-                    continue;
-                }
-                String baseTitle = "Conversation " + convId;
-                if (s.getType() != null) {
-                    baseTitle += " (" + s.getType() + ")";
-                }
-                ConversationItem item = new ConversationItem(convId, baseTitle);
-                try {
-                    long unread = conversationService.getUnreadCount(convId);
-                    item.setUnreadCount(unread);
-                } catch (Exception ignored) {
-                }
-                conversations.add(item);
-            }
+        Long convId = s.getConversationId();
+        if (convId == null) {
+            continue;
+        }
+        String type = s.getType();
+        String baseTitle = "Conversation " + convId;
+        if (type != null) {
+            baseTitle += " (" + type + ")";
+        }
+        ConversationItem item = new ConversationItem(convId, baseTitle, type);
+        try {
+            long unread = conversationService.getUnreadCount(convId);
+            item.setUnreadCount(unread);
+        } catch (Exception ignored) {
+        }
+        conversations.add(item);
+    }
 
             if (!conversations.isEmpty()) {
                 conversationsList.getSelectionModel().selectFirst();
@@ -146,7 +129,7 @@ private UserDto currentUser;
                 }
             }
             if (existing == null) {
-                ConversationItem item = new ConversationItem(conversationId, "Direct with user " + otherUserId);
+                ConversationItem item = new ConversationItem(conversationId, "Direct with user " + otherUserId, "DIRECT");
                 conversations.add(item);
                 existing = item;
             }
@@ -191,7 +174,7 @@ private UserDto currentUser;
             String title = (name != null && !name.isBlank())
                     ? "Group: " + name
                     : "Group conversation " + convId;
-            ConversationItem item = new ConversationItem(convId, title);
+            ConversationItem item = new ConversationItem(convId, title, "GROUP");
             conversations.add(item);
             conversationsList.getSelectionModel().select(item);
             activeConversationId = convId;
@@ -231,6 +214,46 @@ private UserDto currentUser;
             showError("Failed to add participant: " + e.getMessage());
         }
     }
+
+    @FXML
+    protected void onRemoveParticipant(ActionEvent event) {
+        if (activeConversationId == null) {
+            showError("Please select a conversation.");
+            return;
+        }
+
+        String userIdText = addParticipantField.getText();
+        if (userIdText == null || userIdText.isBlank()) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Remove participant");
+            dialog.setHeaderText("Remove user from conversation " + activeConversationId);
+            dialog.setContentText("User ID:");
+
+            Optional<String> result = dialog.showAndWait();
+            if (result.isEmpty()) {
+                return;
+            }
+            userIdText = result.get();
+        }
+
+        long userId;
+        try {
+            userId = Long.parseLong(userIdText.trim());
+        } catch (NumberFormatException e) {
+            showError("User ID must be a number.");
+            return;
+        }
+
+        try {
+            conversationService.removeParticipant(activeConversationId, userId);
+            showInfo("Participant removed",
+                    "User " + userId + " was removed from conversation.");
+            addParticipantField.clear();
+        } catch (Exception e) {
+            showError("Failed to remove participant: " + e.getMessage());
+        }
+    }
+
 
     @FXML
     protected void onSendMessage(ActionEvent event) {
@@ -322,6 +345,38 @@ private UserDto currentUser;
 
         showInfo("Statistics", sb.toString());
     }
+
+@FXML
+protected void onOpenTasks(ActionEvent event) {
+    ConversationItem selected = conversationsList.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+        showError("Please select a conversation.");
+        return;
+    }
+    String type = selected.getType();
+    if (type == null || !"GROUP".equalsIgnoreCase(type)) {
+        showError("Tasks are available only for GROUP conversations.");
+        return;
+    }
+
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/tasks.fxml"));
+        Parent root = loader.load();
+
+        com.example.messenger.ui.controllers.TasksController controller = loader.getController();
+        // We don't know exact groupId here, user can enter it in the Tasks window if needed
+        controller.setGroup(null, "Conversation " + selected.getConversationId());
+
+        Stage stage = new Stage();
+        stage.setTitle("Tasks - Conversation " + selected.getConversationId());
+        stage.setScene(new Scene(root));
+        stage.initOwner(conversationsList.getScene().getWindow());
+        stage.show();
+    } catch (Exception e) {
+        e.printStackTrace();
+        showError("Failed to open tasks window: " + e.getMessage());
+    }
+}
 
     @FXML
     protected void onDeleteMessage(ActionEvent event) {
@@ -468,14 +523,20 @@ private UserDto currentUser;
     }
 
     private static class ConversationItem {
-        private final long conversationId;
-        private final String baseTitle;
-        private long unreadCount;
+    private final long conversationId;
+    private final String baseTitle;
+    private final String type;
+    private long unreadCount;
 
-        ConversationItem(long conversationId, String baseTitle) {
-            this.conversationId = conversationId;
-            this.baseTitle = baseTitle;
-        }
+    ConversationItem(long conversationId, String baseTitle, String type) {
+        this.conversationId = conversationId;
+        this.baseTitle = baseTitle;
+        this.type = type;
+    }
+
+    String getType() {
+        return type;
+    }
 
         long getConversationId() {
             return conversationId;
@@ -497,104 +558,4 @@ private UserDto currentUser;
             return getTitle();
         }
     }
-private void loadCurrentUser() {
-    try {
-        currentUser = authService.getCurrentUser();
-        refreshUserHeader();
-    } catch (Exception e) {
-        e.printStackTrace();
-        if (currentUserLabel != null) {
-            currentUserLabel.setText("Error loading user");
-        }
-    }
-}
-
-private void refreshUserHeader() {
-    if (currentUserLabel == null || currentUserAvatar == null) {
-        return;
-    }
-
-    if (currentUser == null) {
-        currentUserLabel.setText("Not logged in");
-        currentUserAvatar.setImage(null);
-        return;
-    }
-
-    currentUserLabel.setText(currentUser.getName() + " (id: " + currentUser.getUserId() + ")");
-
-    String avatarUrl = currentUser.getAvatarUrl();
-    if (avatarUrl == null || avatarUrl.isBlank()) {
-        currentUserAvatar.setImage(null);
-        return;
-    }
-
-    String url = avatarUrl;
-    try {
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            String apiBase = Env.API_BASE_URL;
-            String root = apiBase;
-            int idx = apiBase.indexOf("/api");
-            if (idx > 0) {
-                root = apiBase.substring(0, idx);
-            }
-            if (!url.startsWith("/")) {
-                url = "/" + url;
-            }
-            url = root + url;
-        }
-
-        Image image = new Image(url, true);
-        currentUserAvatar.setImage(image);
-    } catch (IllegalArgumentException ex) {
-        System.err.println("Failed to load header avatar from '" + avatarUrl + "': " + ex.getMessage());
-        currentUserAvatar.setImage(null);
-    }
-}
-
-@FXML
-private void onLogout(ActionEvent event) {
-    try {
-        authService.logout();
-        Stage stage = (Stage) conversationsList.getScene().getWindow();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/login.fxml"));
-        Scene scene = new Scene(loader.load());
-        stage.setScene(scene);
-        stage.setTitle("Messenger - Login");
-    } catch (Exception e) {
-        e.printStackTrace();
-        showError("Logout failed: " + e.getMessage());
-    }
-}
-
-@FXML
-private void onOpenProfile(ActionEvent event) {
-    if (currentUser == null) {
-        return;
-    }
-
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/user_profile.fxml"));
-        Scene scene = new Scene(loader.load());
-        Stage stage = new Stage();
-        stage.setTitle("User profile");
-        stage.setScene(scene);
-        stage.initOwner(conversationsList.getScene().getWindow());
-
-        Object controller = loader.getController();
-        if (controller instanceof UserProfileController upc) {
-            upc.setUserAndServices(currentUser, userService, this::onUserUpdated);
-        }
-
-        stage.showAndWait();
-    } catch (Exception e) {
-        e.printStackTrace();
-        showError("Failed to open profile: " + e.getMessage());
-    }
-}
-
-private void onUserUpdated(UserDto updatedUser) {
-    this.currentUser = updatedUser;
-    refreshUserHeader();
-}
-
 }

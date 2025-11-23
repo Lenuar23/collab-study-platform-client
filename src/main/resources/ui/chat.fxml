@@ -2,33 +2,11 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.messenger.ui.controllers.ChatController">
-    <top>
-        <HBox spacing="10.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets top="5" right="10" bottom="5" left="10"/>
-            </padding>
-
-            <ImageView fx:id="currentUserAvatar"
-                       fitWidth="32.0"
-                       fitHeight="32.0"
-                       preserveRatio="true"/>
-
-            <Label text="Logged in as:"/>
-            <Label fx:id="currentUserLabel" text="(loading...)"/>
-
-            <Pane HBox.hgrow="ALWAYS"/>
-
-            <Button text="Profile" onAction="#onOpenProfile"/>
-            <Button text="Logout" onAction="#onLogout"/>
-        </HBox>
-    </top>
-
 
     <left>
         <VBox spacing="8.0">
@@ -66,11 +44,13 @@
                     <Label text="Conversation:"/>
                     <Label fx:id="activeConversationLabel" text="None"/>
                     <Button text="Stats" onAction="#onShowStats"/>
+                    <Button text="Tasks" onAction="#onOpenTasks"/>
                     <Button text="Delete selected" onAction="#onDeleteMessage"/>
                     <Button text="Edit selected" onAction="#onEditMessage"/>
                     <Button text="Participants" onAction="#onShowParticipants"/>
                     <TextField fx:id="addParticipantField" promptText="Add user ID"/>
                     <Button text="Add" onAction="#onAddParticipant"/>
+                    <Button text="Remove" onAction="#onRemoveParticipant"/>
                 </HBox>
             </top>
 

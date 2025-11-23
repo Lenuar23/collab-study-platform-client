@@ -98,17 +98,6 @@ public class ConversationService {
         return 0L;
     }
 
-public ConversationSummary[] listUserConversationsForUser(long userId) throws IOException, InterruptedException {
-    String path = "/chat/user/" + userId;
-    return ApiClient.get(path, ConversationSummary[].class);
-}
-
-public ConversationDetailsResponse.ParticipantInfo[] listConversationParticipants(long conversationId)
-        throws IOException, InterruptedException {
-    String path = "/chat/conversations/" + conversationId + "/participants";
-    return ApiClient.get(path, ConversationDetailsResponse.ParticipantInfo[].class);
-}
-
     public void markAsRead(long conversationId, Long lastReadMessageId) throws IOException, InterruptedException {
         if (lastReadMessageId == null) {
             return;
@@ -120,5 +109,11 @@ public ConversationDetailsResponse.ParticipantInfo[] listConversationParticipant
         UpdateReadReceiptRequest request = new UpdateReadReceiptRequest(currentUserId, lastReadMessageId);
         String path = "/chat/conversations/" + conversationId + "/read-receipts";
         ApiClient.post(path, request, Void.class);
+    }
+
+
+    public void removeParticipant(long conversationId, long userId) throws IOException, InterruptedException {
+        String path = "/chat/conversations/" + conversationId + "/participants/" + userId;
+        ApiClient.delete(path);
     }
 }

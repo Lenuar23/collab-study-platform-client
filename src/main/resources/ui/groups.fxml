@@ -43,6 +43,7 @@
                     <HBox spacing="5.0">
                         <Button text="Save name/description" onAction="#onSaveGroupChanges"/>
                         <Button text="Update avatar" onAction="#onUpdateAvatar"/>
+                        <Button text="Tasks" onAction="#onOpenTasks"/>
                     </HBox>
 
                     <Separator/>

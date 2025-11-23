@@ -2,6 +2,11 @@ package com.example.messenger.ui.controllers;
 
 import com.example.messenger.dto.GroupDto;
 import com.example.messenger.net.GroupService;
+import com.example.messenger.ui.controllers.TasksController;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -268,5 +273,30 @@ public class GroupsController {
         alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+
+    @FXML
+    private void onOpenTasks() {
+        if (selectedGroup == null) {
+            showError("No group selected.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/tasks.fxml"));
+            Parent root = loader.load();
+    
+            TasksController controller = loader.getController();
+            controller.setGroup(selectedGroup.getGroupId(), selectedGroup.getName());
+    
+            Stage stage = new Stage();
+            stage.setTitle("Tasks - Group " + selectedGroup.getGroupId());
+            stage.setScene(new Scene(root));
+            stage.initOwner(groupsList.getScene().getWindow());
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Failed to open tasks window: " + e.getMessage());
+        }
     }
 }
