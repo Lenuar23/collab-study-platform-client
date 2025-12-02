@@ -6,7 +6,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.messenger.ui.controllers.GroupsController">
+            fx:controller="com.example.messenger.ui.controllers.GroupsController"
+            styleClass="app-root">
 
     <top>
         <HBox spacing="8.0" alignment="CENTER_LEFT">

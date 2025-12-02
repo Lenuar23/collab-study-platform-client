@@ -6,6 +6,8 @@ module org.example.cspclient {
     requires com.fasterxml.jackson.databind;
 
     exports com.example.messenger;
+    exports com.example.messenger.ui.controllers.chat;
+    opens com.example.messenger.ui.controllers.chat to javafx.fxml;
 
     opens com.example.messenger.ui.controllers to javafx.fxml;
     opens com.example.messenger.dto to com.fasterxml.jackson.databind;

@@ -1,0 +1,25 @@
+/* theme.css (ОНОВЛЕНО ДЛЯ ГЛОБАЛЬНОЇ ДОСТУПНОСТІ ЗМІННИХ) */
+
+/* Визначаємо змінні палітри та FX-змінні на універсальному рівні, щоб вони були доступні в усіх CSS-файлах */
+* {
+    /* Основна палітра з фото */
+    -color-dark-1: #06141B;
+    -color-dark-2: #11212D;
+    -color-mid-1:  #253745;
+    -color-mid-2:  #4A5C6A;
+    -color-light-1:#9BA8AB;
+    -color-light-2:#CCD0CF;
+
+    /* Градієнт фону */
+    -bg-gradient: linear-gradient(to bottom right, #253745, #11212D, #06141B);
+
+    /* Спеціальні кольори для ефекту скла (Glassmorphism) */
+    -glass-card-bg: rgba(37, 55, 69, 0.65); 
+    -glass-border:  rgba(155, 168, 171, 0.3);
+    -glass-shadow:  rgba(0, 0, 0, 0.5);
+}
+
+/* Використовуємо .root для застосування градієнта до кореневого вузла */
+.root {
+    -fx-background-color: -bg-gradient;
+}

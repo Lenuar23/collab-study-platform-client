@@ -3,6 +3,7 @@ package com.example.messenger.dto;
 public class UpdateUserProfileRequest {
     private String name;
     private String avatarUrl;
+    // Description видалено
 
     public UpdateUserProfileRequest() {
     }

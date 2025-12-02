@@ -1,1 +1,214 @@
-root { -fx-font-family: 'Segoe UI', sans-serif; }
+/* ===========================================
+   CORE APP BACKGROUND / FONT
+   =========================================== */
+
+.app-root {
+    -fx-background-color: -app-bg;
+    -fx-text-fill: -app-text;
+    -fx-font-size: 16px;
+}
+
+/* ===========================================
+   LABELS
+   =========================================== */
+
+.label {
+    -fx-text-fill: -app-text;
+    -fx-font-size: 16px;
+}
+
+.header-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+}
+
+.sidebar-section-title {
+    -fx-text-fill: -app-text-muted;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* ===========================================
+   HEADER BAR
+   =========================================== */
+
+.header-bar {
+    -fx-background-color: -app-bg-header;
+    -fx-border-color: -app-border;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 16 10 16;
+    -fx-spacing: 12;
+}
+
+.header-bar .button {
+    -fx-background-color: -app-bg-elevated;
+    -fx-border-color: -app-border-soft;
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+
+.chat-sidebar {
+    -fx-background-color: -app-bg-sidebar;
+    -fx-border-color: -app-border;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 12;
+    -fx-spacing: 10;
+}
+
+/* ListView appearance */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: -app-border-soft;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+/* List cells */
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -app-text;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 16px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: -app-accent-muted;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: -app-bg-elevated;
+}
+
+/* ===========================================
+   TEXT FIELDS
+   =========================================== */
+
+.text-field {
+    -fx-background-color: -app-bg-input;
+    -fx-text-fill: -app-text;
+    -fx-prompt-text-fill: -app-text-muted;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: -app-border-soft;
+    -fx-border-width: 1;
+    -fx-padding: 8 10 8 10;
+    -fx-font-size: 16px;
+}
+
+/* ===========================================
+   BUTTONS
+   =========================================== */
+
+.button {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-background-color: -app-bg-elevated;
+    -fx-border-color: -app-border-soft;
+    -fx-border-width: 1;
+    -fx-text-fill: -app-text;
+    -fx-padding: 8 16 8 16;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: -app-bg-input;
+}
+
+.button:pressed {
+    -fx-background-color: -app-accent-muted;
+}
+
+/* Акцентні кнопки, якщо захочеш їх юзати */
+.accent-button {
+    -fx-background-color: -app-accent;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.accent-button:hover {
+    -fx-background-color: -app-accent-hover;
+}
+
+/* ===========================================
+   SEARCH BAR & MESSAGE BAR
+   =========================================== */
+
+.search-bar {
+    -fx-background-color: -app-bg-header;
+    -fx-border-color: -app-border;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10 12 10 12;
+    -fx-spacing: 10;
+}
+
+.message-input-bar {
+    -fx-background-color: -app-bg-header;
+    -fx-border-color: -app-border;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 10 12 10 12;
+    -fx-spacing: 10;
+}
+
+/* ===========================================
+   SCROLLBAR
+   =========================================== */
+
+.scroll-bar:horizontal, .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.thumb {
+    -fx-background-color: derive(-app-border-soft, 10%);
+    -fx-background-radius: 4;
+}
+
+.track {
+    -fx-background-color: transparent;
+}
+
+/* ===========================================
+   CARDS / PANELS
+   =========================================== */
+
+.card {
+    -fx-background-color: -app-bg-elevated;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: -app-border;
+    -fx-padding: 10;
+}
+
+/* ===========================================
+   MESSAGE AREA
+   =========================================== */
+
+.messages-root {
+    -fx-background-color: -app-bg;
+    -fx-padding: 10;
+}
+
+.msg-bubble-mine {
+    -fx-background-color: -app-accent;
+    -fx-text-fill: white;
+    -fx-background-radius: 12;
+    -fx-padding: 8 12 8 12;
+    -fx-max-width: 60%;
+}
+
+.msg-bubble-other {
+    -fx-background-color: -app-bg-elevated;
+    -fx-text-fill: -app-text;
+    -fx-background-radius: 12;
+    -fx-padding: 8 12 8 12;
+    -fx-max-width: 60%;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6;
+}

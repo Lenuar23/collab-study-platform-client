@@ -3,11 +3,11 @@ package com.example.messenger.dto;
 public class ConversationDto {
     private Long id;
     private Long conversationId;
+    private Long groupId;        // ← додано!
     private String type;
     private String createdAt;
 
-    public ConversationDto() {
-    }
+    public ConversationDto() {}
 
     public Long getId() {
         return id;
@@ -23,6 +23,14 @@ public class ConversationDto {
 
     public void setConversationId(Long conversationId) {
         this.conversationId = conversationId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 
     public String getType() {

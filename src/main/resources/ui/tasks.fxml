@@ -6,20 +6,22 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.messenger.ui.controllers.TasksController">
+            fx:controller="com.example.messenger.ui.controllers.TasksController"
+            styleClass="app-root">
 
-    <top>
-        <HBox spacing="8.0" alignment="CENTER_LEFT">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-            <Label fx:id="groupTitleLabel" text="Tasks"/>
-            <Pane HBox.hgrow="ALWAYS"/>
-            <Label text="Group ID:"/>
-            <TextField fx:id="groupIdField" prefWidth="100" editable="false"/>
-            <Button text="Load tasks" onAction="#onLoadTasks"/>
-        </HBox>
-    </top>
+<top>
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+        <Label fx:id="groupTitleLabel" text="Tasks"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Label text="Group ID:"/>
+        <TextField fx:id="groupIdField" visible="false" managed="false"/>
+        <Button text="Load tasks" onAction="#onLoadTasks"/>
+    </HBox>
+</top>
+
 
     <center>
         <ListView fx:id="tasksList"/>

@@ -1,80 +1,126 @@
 package com.example.messenger.ui.controllers;
 
-import com.example.messenger.net.AuthService;
 import com.example.messenger.dto.AuthResponse;
+import com.example.messenger.dto.UserDto;
+import com.example.messenger.net.AuthService;
+import com.example.messenger.net.UserService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class LoginController {
 
-    @FXML
-    private TextField emailField;
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private CheckBox rememberBox;
 
-    @FXML
-    private PasswordField passwordField;
+    // Новий лейбл для помилок
+    @FXML private Label errorLabel;
 
     private final AuthService authService = new AuthService();
+    private final UserService userService = new UserService();
 
     @FXML
-    protected void onLogin(ActionEvent event) {
-        String email = emailField.getText();
-        String password = passwordField.getText();
-
-        if (email == null || email.isBlank() || password == null || password.isBlank()) {
-            showError("Please enter both email and password.");
-            return;
-        }
+    private void onLoginClick(ActionEvent event) {
+        hideError(); // Ховаємо стару помилку перед новим запитом
 
         try {
-            AuthResponse response = authService.login(email, password);
-            openChatScreen();
+            String email = emailField.getText();
+            String pass = passwordField.getText();
+
+            if (email == null || email.isBlank()) {
+                showError("Enter email!");
+                return;
+            }
+            if (pass == null || pass.isBlank()) {
+                showError("Enter password!");
+                return;
+            }
+
+            // 1. Логін
+            AuthResponse response = authService.login(email, pass);
+
+            // 2. Отримання даних користувача (фікс твоєї червоної помилки)
+            Long userId = response.getUserId();
+            UserDto user = userService.getUserById(userId);
+
+            System.out.println("Login success for: " + user.getName());
+
+            // 3. Відкриття головного вікна
+            openMainWindow(user);
+
         } catch (Exception e) {
+            e.printStackTrace();
+            // Показуємо помилку знизу червоним
             showError("Login failed: " + e.getMessage());
         }
     }
 
     @FXML
-    protected void onGoToRegister(ActionEvent event) {
+    private void onGoToRegister(ActionEvent event) {
         openRegisterScreen();
     }
 
-    private void openChatScreen() {
+    private void openMainWindow(UserDto user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/chat.fxml"));
-            Scene scene = new Scene(loader.load());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main-window.fxml"));
+            Parent root = loader.load();
+
+            MainWindowController controller = loader.getController();
+            controller.setCurrentUser(user);
+
+            Scene scene = new Scene(root);
             Stage stage = (Stage) emailField.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Messenger - Chat");
+            stage.setTitle("Study Platform - Dashboard");
+            stage.setMaximized(true);
             stage.show();
+
         } catch (Exception e) {
-            showError("Unable to open chat screen: " + e.getMessage());
+            showError("Unable to open main window: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private void openRegisterScreen() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/register.fxml"));
-            Scene scene = new Scene(loader.load());
+            Parent root = loader.load();
+
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
+            stage.setScene(new Scene(root));
             stage.setTitle("Messenger - Register");
             stage.show();
-        } catch (Exception e) {
+        } catch (IOException e) {
             showError("Unable to open register screen: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Login error");
-        alert.setContentText(message);
-        alert.showAndWait();
+    // Новий метод для показу помилки в Label
+    private void showError(String msg) {
+        if (errorLabel != null) {
+            errorLabel.setText(msg);
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        } else {
+            // Фолбек, якщо label чомусь не прив'язався
+            System.err.println("Error: " + msg);
+        }
+    }
+
+    // Метод для приховування помилки
+    private void hideError() {
+        if (errorLabel != null) {
+            errorLabel.setVisible(false);
+            errorLabel.setManaged(false);
+            errorLabel.setText("");
+        }
     }
 }

@@ -1,0 +1,76 @@
+/* main-window.css */
+
+.dashboard-root {
+    -fx-background-color: transparent;
+}
+
+.dashboard-canvas {
+    -fx-background-color: transparent;
+}
+
+/* Центральне коло - більш прозоре та з розмиттям */
+.center-halo {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+
+    -fx-background-color: rgba(17, 33, 45, 0.45);
+    -fx-border-color: rgba(204, 208, 207, 0.35);
+    -fx-border-width: 2.5;
+
+    -fx-effect: dropshadow(gaussian, rgba(204, 208, 207, 0.4), 35, 0.3, 0, 0),
+                innershadow(gaussian, rgba(255, 255, 255, 0.1), 15, 0.5, 0, 1);
+    
+    -fx-cursor: hand;
+}
+
+.center-halo:hover {
+    -fx-background-color: rgba(17, 33, 45, 0.55);
+    -fx-border-color: rgba(204, 208, 207, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(204, 208, 207, 0.6), 45, 0.4, 0, 0),
+                innershadow(gaussian, rgba(255, 255, 255, 0.15), 15, 0.5, 0, 1);
+}
+
+/* Текст привітання */
+.center-greeting {
+    -fx-text-fill: -color-light-2;
+    -fx-font-size: 28px;
+    -fx-font-weight: 500;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0.3, 0, 2);
+}
+
+/* Орбітальні кнопки - glassmorphism */
+.orbit-button {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+
+    -fx-background-color: rgba(37, 55, 69, 0.55);
+    -fx-border-color: rgba(155, 168, 171, 0.35);
+    -fx-border-width: 2;
+    
+    -fx-text-fill: -color-light-2;
+    -fx-font-size: 15px;
+    -fx-font-weight: 500;
+
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 20, 0.3, 0, 4),
+                innershadow(gaussian, rgba(255, 255, 255, 0.08), 10, 0.5, 0, 1);
+    
+    -fx-cursor: hand;
+}
+
+/* Hover ефект - яскравіше світіння */
+.orbit-button:hover {
+    -fx-background-color: rgba(74, 92, 106, 0.7);
+    -fx-border-color: rgba(204, 208, 207, 0.6);
+    -fx-text-fill: -color-light-2;
+    
+    -fx-effect: dropshadow(gaussian, rgba(204, 208, 207, 0.5), 30, 0.4, 0, 5),
+                innershadow(gaussian, rgba(255, 255, 255, 0.15), 12, 0.6, 0, 1);
+}
+
+/* Pressed ефект */
+.orbit-button:pressed {
+    -fx-background-color: rgba(37, 55, 69, 0.8);
+    -fx-border-color: rgba(155, 168, 171, 0.5);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 15, 0.3, 0, 2),
+                innershadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0.5, 0, -1);
+}

@@ -1,0 +1,126 @@
+/* Основний фон */
+.root {
+    -fx-background-color: -bg-gradient;
+}
+
+/* ============ КАРТКИ (СКЛО) ============ */
+.glass-card {
+    -fx-background-color: -glass-card-bg;
+    -fx-background-radius: 30;
+    -fx-border-color: -glass-border;
+    -fx-border-radius: 30;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(three-pass-box, -glass-shadow, 30, 0, 0, 10);
+}
+
+.glass-card-bottom {
+    -fx-background-color: -glass-card-bg;
+    -fx-background-radius: 0 0 30 30;
+    -fx-border-color: -glass-border;
+    -fx-border-radius: 0 0 30 30;
+    -fx-border-width: 0 1.5 1.5 1.5;
+    -fx-effect: dropshadow(three-pass-box, -glass-shadow, 20, 0, 0, 5);
+    
+    /* Позиціонування нижньої картки */
+    -fx-padding: 30 20 20 20;
+    
+    /* ВИПРАВЛЕНО: Збільшуємо зсув, щоб картка опустилася нижче і не перекривалася */
+    -fx-translate-y: 35px; /* Збільшено з 15px */
+    
+    /* ВИДАЛЕНО: -fx-view-order: 1; - це відправляло картку на задній план і спричиняло проблеми */
+}
+
+/* ============ АВАТАР ============ */
+.avatar-container {
+    -fx-translate-y: -45px;
+    -fx-view-order: -1; /* Витягнути наперед */
+}
+.avatar-bg {
+    -fx-fill: -color-dark-1; /* Найтемніший колір */
+}
+.avatar-icon {
+    -fx-fill: -color-light-2; /* Найяскравіший */
+}
+
+/* ============ ПОЛЯ ВВОДУ ============ */
+.input-box {
+    -fx-background-color: -color-dark-2; /* Темний прямокутник */
+    -fx-background-radius: 8;
+    -fx-padding: 12 15 12 15;
+}
+
+.input-icon {
+    -fx-fill: -color-light-1;
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-light-2;
+    -fx-prompt-text-fill: derive(-color-light-1, -30%); /* Трохи темніший за light-1 */
+    -fx-font-size: 14px;
+}
+
+/* ============ ТЕКСТ І КОНТРОЛИ ============ */
+.checkbox {
+    -fx-text-fill: -color-light-2;
+    -fx-font-size: 13px;
+}
+.checkbox > .box {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-light-1;
+    -fx-border-radius: 3px;
+}
+.checkbox:selected > .box > .mark {
+    -fx-background-color: -color-light-2;
+}
+
+.link {
+    -fx-text-fill: -color-light-1;
+    -fx-font-size: 13px;
+    -fx-underline: false;
+    -fx-border-color: transparent;
+}
+.link:hover {
+    -fx-text-fill: -color-light-2;
+}
+
+/* ============ КНОПКА ============ */
+.login-button {
+    -fx-background-color: -color-mid-2; /* Акцентний колір #4A5C6A */
+    -fx-text-fill: -color-light-2;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-padding: 12 0 12 0;
+    -fx-cursor: hand; /* Курсор-рука */
+    
+    /* Плавна анімація (працює в новіших JavaFX, якщо ні - ігнорується) */
+    -fx-transition: -fx-background-color 0.2s; 
+}
+
+.login-button:hover {
+    /* Робимо колір значно світлішим при наведенні */
+    -fx-background-color: derive(-color-mid-2, 40%); 
+    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.3), 10, 0, 0, 0);
+}
+
+.login-button:pressed {
+    /* Ефект натискання */
+    -fx-background-color: derive(-color-mid-2, -10%);
+    -fx-translate-y: 1px;
+}
+
+.register-link {
+    -fx-text-fill: -color-light-1;
+    -fx-font-size: 13px;
+    -fx-underline: true; /* Підкреслення, щоб виглядало як лінк */
+    -fx-border-color: transparent;
+    -fx-padding: 5 0 5 0;
+}
+
+.register-link:hover {
+    -fx-text-fill: -color-light-2; /* Світлішає при наведенні */
+    -fx-cursor: hand;
+}

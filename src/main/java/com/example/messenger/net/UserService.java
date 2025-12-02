@@ -12,8 +12,10 @@ public class UserService {
         return ApiClient.get("/users/" + userId, UserDto.class);
     }
 
+    // ПРИБРАЛИ параметр description
     public UserDto updateUserProfile(Long userId, String name, String avatarUrl)
             throws IOException, InterruptedException {
+        // Створюємо запит без description
         UpdateUserProfileRequest request = new UpdateUserProfileRequest(name, avatarUrl);
         return ApiClient.put("/users/" + userId + "/profile", request, UserDto.class);
     }
