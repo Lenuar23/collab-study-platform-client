@@ -1,0 +1,79 @@
+/* scrollbar.css - Сучасний темний скролбар */
+
+/* 1. Загальний контейнер скролбара */
+.scroll-bar {
+    -fx-background-color: transparent; /* Прозорий фон */
+    -fx-block-increment: 20;
+}
+
+/* Вертикальний скролбар */
+.scroll-bar:vertical {
+    -fx-pref-width: 10; /* Вузький (стандартний десь 15-18px) */
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+/* Горизонтальний скролбар (якщо знадобиться) */
+.scroll-bar:horizontal {
+    -fx-pref-height: 10;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+/* 2. "Повзунок" (Thumb) - те, що рухається */
+.scroll-bar .thumb {
+    -fx-background-color: -color-mid-2; /* Використовуємо твій сірий колір (#4A5C6A) */
+    -fx-background-radius: 10; /* Закруглені краї */
+    -fx-background-insets: 1;  /* Відступ, щоб повзунок не зливався з краями */
+}
+
+/* При наведенні мишкою */
+.scroll-bar .thumb:hover {
+    -fx-background-color: -color-light-1; /* Світлішає (#9BA8AB) */
+}
+
+/* При перетягуванні */
+.scroll-bar .thumb:pressed {
+    -fx-background-color: -color-light-2; /* Майже білий (#CCD0CF) */
+}
+
+/* 3. "Доріжка" (Track) - фон під повзунком */
+.scroll-bar .track {
+    -fx-background-color: transparent; /* Повністю прозора */
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+/* Опціонально: ледь помітна доріжка, якщо хочеш бачити межі скролу */
+/*
+.scroll-bar .track {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-background-radius: 10;
+}
+*/
+
+/* 4. Приховуємо стрілки вверх/вниз (Increment/Decrement buttons) */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+    
+    /* Робимо їх нульового розміру, щоб не займали місце */
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+}
+
+/* Приховуємо самі іконки стрілок всередині кнопок */
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: null;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+
+/* 5. Куточок (Corner) - місце перетину вертикального і горизонтального скролів */
+.scroll-pane > .corner {
+    -fx-background-color: transparent;
+}

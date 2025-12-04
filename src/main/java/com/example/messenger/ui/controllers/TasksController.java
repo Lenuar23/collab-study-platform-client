@@ -1,303 +1,357 @@
 package com.example.messenger.ui.controllers;
 
+import com.example.messenger.dto.GroupDto;
 import com.example.messenger.dto.TaskDto;
 import com.example.messenger.dto.TaskProgressDto;
+import com.example.messenger.dto.UserDto;
+import com.example.messenger.net.GroupService;
 import com.example.messenger.net.TaskService;
+import com.example.messenger.net.UserService;
 import com.example.messenger.store.SessionStore;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class TasksController {
 
-    @FXML
-    private Label groupTitleLabel;
+    @FXML private VBox mainCard;
+    @FXML private Label headerTitle;
+    @FXML private Button backButton;
+    @FXML private Button createButton;
+    @FXML private Label statusLabel;
 
-    @FXML
-    private TextField groupIdField;
+    @FXML private VBox taskListPane;
+    @FXML private VBox createTaskPane;
+    @FXML private VBox taskDetailsPane;
 
-    @FXML
-    private ListView<String> tasksList;
+    @FXML private ListView<TaskDto> tasksListView;
 
-    @FXML
-    private TextField newTitleField;
+    @FXML private TextField newTitleField;
+    @FXML private TextArea newDescArea;
+    @FXML private DatePicker newDueDatePicker;
 
-    @FXML
-    private TextField newDueDateField;
-
-    @FXML
-    private TextArea newDescriptionArea;
-
-    @FXML
-    private TextField assignUserIdField;
-
-    @FXML
-    private TextField statusUserIdField;
-
-    @FXML
-    private ComboBox<String> statusCombo;
-
-    @FXML
-    private ListView<String> progressList;
+    @FXML private Label detailTitleLabel;
+    @FXML private Label detailDescLabel;
+    @FXML private ComboBox<String> statusCombo;
+    @FXML private ListView<String> progressListView;
+    @FXML private HBox assignBox;
 
     private final TaskService taskService = new TaskService();
+    private final GroupService groupService = new GroupService();
+    private final UserService userService = new UserService();
+
     private Long currentGroupId;
-    private Long groupId;
-    private List<TaskDto> currentTasks = new ArrayList<>();
-    private Long selectedTaskId;
+    private boolean isGlobalMode = false;
+
+    private TaskDto selectedTask;
+    private Runnable closeCallback;
+
+    private final Map<Long, String> userNameCache = new HashMap<>();
 
     @FXML
     private void initialize() {
-        if (statusCombo != null) {
-            statusCombo.setItems(FXCollections.observableArrayList("OPEN", "IN_PROGRESS", "DONE"));
-        }
+        // УВАГА: В інтерфейсі "JOINED" замінює "OPEN"
+        statusCombo.setItems(FXCollections.observableArrayList(
+                "JOINED",      // UI: JOINED -> Server: OPEN
+                "IN_PROGRESS",
+                "DONE"
+        ));
 
-        if (tasksList != null) {
-            tasksList.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal == null) return;
+        tasksListView.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(TaskDto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null); setGraphic(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    HBox box = new HBox(10);
+                    box.setAlignment(Pos.CENTER_LEFT);
+                    box.setStyle("-fx-padding: 12; -fx-background-color: rgba(255,255,255,0.05); -fx-background-radius: 8; -fx-cursor: hand;");
 
-                int idx = newVal.intValue();
-                if (idx < 0 || idx >= currentTasks.size()) return;
+                    VBox info = new VBox(4);
+                    Label title = new Label(item.getTitle());
+                    title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
 
-                TaskDto task = currentTasks.get(idx);
-                selectedTaskId = task.getTaskId();
-                progressList.setItems(FXCollections.observableArrayList());
-            });
-        }
-    }
+                    // Отримуємо "сирий" статус від сервера
+                    String rawStatus = item.getStatus() != null ? item.getStatus() : "OPEN";
 
-    // ----------------------------
-    // AUTOMATIC GROUP ID INJECTION
-    // ----------------------------
-    public void setGroup(Long groupId, String groupName) {
-        this.groupId = groupId;
-        this.currentGroupId = groupId;
+                    // Конвертуємо для відображення
+                    String displayStatus = rawStatus;
+                    if ("OPEN".equals(rawStatus)) displayStatus = "JOINED";
 
-        if (groupTitleLabel != null) {
-            if (groupName != null && !groupName.isBlank()) {
-                groupTitleLabel.setText("Tasks for group: " + groupName + " (ID " + groupId + ")");
-            } else {
-                groupTitleLabel.setText("Tasks for group ID " + groupId);
-            }
-        }
+                    String groupInfo = isGlobalMode ? "Group " + item.getGroupId() + " • " : "";
+                    String dateInfo = (item.getDueDate() != null ? " • Due: " + item.getDueDate() : "");
 
-        loadTasks();
-    }
+                    String subText = groupInfo + "[" + displayStatus + "]" + dateInfo;
+                    Label meta = new Label(subText);
 
+                    // Стилі
+                    if ("DONE".equals(rawStatus)) meta.setStyle("-fx-text-fill: #2ecc71; -fx-font-size: 11px;"); // Green
+                    else if ("FAILED".equals(rawStatus)) meta.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 11px;"); // Red
+                    else if ("DEFERRED".equals(rawStatus)) meta.setStyle("-fx-text-fill: #f39c12; -fx-font-size: 11px;"); // Orange
+                    else if ("IN_PROGRESS".equals(rawStatus)) meta.setStyle("-fx-text-fill: #3498db; -fx-font-size: 11px;"); // Blue
+                    else meta.setStyle("-fx-text-fill: #9BA8AB; -fx-font-size: 11px;"); // Grey (Joined/Open)
 
-    // ----------------------------
-    // LOAD TASKS
-    // ----------------------------
-    @FXML
-    private void onLoadTasks(ActionEvent event) {
-        if (currentGroupId == null) {
-            showError("No group ID provided.");
-            return;
-        }
-        loadTasks();
-    }
+                    info.getChildren().addAll(title, meta);
+                    HBox.setHgrow(info, Priority.ALWAYS);
 
-    private void loadTasks() {
-        if (currentGroupId == null) return;
+                    Label arrow = new Label("›");
+                    arrow.setStyle("-fx-text-fill: #9BA8AB; -fx-font-size: 18px; -fx-font-weight: bold;");
 
-        try {
-            TaskDto[] arr = taskService.getTasksForGroup(currentGroupId);
-            currentTasks = (arr == null) ? new ArrayList<>() : new ArrayList<>(Arrays.asList(arr));
+                    box.getChildren().addAll(info, arrow);
+                    box.setOnMouseClicked(e -> openTaskDetails(item));
 
-            ObservableList<String> items = FXCollections.observableArrayList();
-            for (TaskDto t : currentTasks) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Task ").append(t.getTaskId()).append(": ");
-                sb.append(t.getTitle() != null ? t.getTitle() : "(no title)");
-                if (t.getStatus() != null) sb.append(" [").append(t.getStatus()).append("]");
-                if (t.getDueDate() != null) sb.append(" (due ").append(t.getDueDate()).append(")");
-                items.add(sb.toString());
-            }
-
-            tasksList.setItems(items);
-            selectedTaskId = null;
-            progressList.setItems(FXCollections.observableArrayList());
-
-        } catch (IOException | InterruptedException e) {
-            showError("Failed to load tasks: " + e.getMessage());
-        }
-    }
-
-    // ----------------------------
-    // CREATE TASK
-    // ----------------------------
-    @FXML
-    private void onCreateTask(ActionEvent event) {
-        if (currentGroupId == null) {
-            showError("No group selected.");
-            return;
-        }
-
-        String title = newTitleField.getText();
-        String dueDate = newDueDateField.getText();
-        String description = newDescriptionArea.getText();
-
-        if (title == null || title.isBlank()) {
-            showError("Task title cannot be empty.");
-            return;
-        }
-
-        if (dueDate != null && dueDate.isBlank()) dueDate = null;
-        if (description != null && description.isBlank()) description = null;
-
-        try {
-            taskService.createTask(currentGroupId, title.trim(), description, dueDate);
-
-            newTitleField.clear();
-            newDueDateField.clear();
-            newDescriptionArea.clear();
-
-            showInfo("Success", "Task created.");
-            loadTasks();
-        } catch (IOException | InterruptedException e) {
-            showError("Failed to create task: " + e.getMessage());
-        }
-    }
-
-    // ----------------------------
-    // ASSIGN USER
-    // ----------------------------
-    @FXML
-    private void onAssignUser(ActionEvent event) {
-        if (selectedTaskId == null) {
-            showError("Select a task first.");
-            return;
-        }
-
-        String text = assignUserIdField.getText();
-        if (text == null || text.isBlank()) {
-            showError("Enter User ID.");
-            return;
-        }
-
-        Long userId;
-        try {
-            userId = Long.parseLong(text.trim());
-        } catch (NumberFormatException e) {
-            showError("User ID must be a number.");
-            return;
-        }
-
-        try {
-            taskService.assignUserToTask(selectedTaskId, userId);
-            showInfo("Success", "User assigned.");
-            assignUserIdField.clear();
-            loadProgressInternal();
-        } catch (IOException | InterruptedException e) {
-            showError("Failed: " + e.getMessage());
-        }
-    }
-
-    // ----------------------------
-    // LOAD PROGRESS
-    // ----------------------------
-    @FXML
-    private void onLoadProgress(ActionEvent event) {
-        if (selectedTaskId == null) {
-            showError("Select a task.");
-            return;
-        }
-        loadProgressInternal();
-    }
-
-    private void loadProgressInternal() {
-        if (selectedTaskId == null) return;
-
-        try {
-            TaskProgressDto[] arr = taskService.getTaskProgress(selectedTaskId);
-            ObservableList<String> items = FXCollections.observableArrayList();
-
-            if (arr != null) {
-                for (TaskProgressDto p : arr) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("User ").append(p.getUserId())
-                            .append(": ").append(p.getStatus());
-                    if (p.getUpdatedAt() != null)
-                        sb.append(" (updated ").append(p.getUpdatedAt()).append(")");
-                    if (p.getCompletedAt() != null)
-                        sb.append(", completed ").append(p.getCompletedAt());
-                    items.add(sb.toString());
+                    setGraphic(box);
+                    setStyle("-fx-background-color: transparent; -fx-padding: 5 0 5 0;");
                 }
             }
-
-            progressList.setItems(items);
-
-        } catch (IOException | InterruptedException e) {
-            showError("Failed: " + e.getMessage());
-        }
+        });
     }
 
-    // ----------------------------
-    // UPDATE STATUS
-    // ----------------------------
-    @FXML
-    private void onUpdateStatus(ActionEvent event) {
-        if (selectedTaskId == null) {
-            showError("Select a task.");
-            return;
+    // --- SETUP ---
+
+    public void setupGroupMode(Long groupId, String groupName) {
+        this.currentGroupId = groupId;
+        this.isGlobalMode = false;
+
+        headerTitle.setText("Tasks: " + groupName);
+        backButton.setVisible(false); backButton.setManaged(false);
+        createButton.setVisible(true); createButton.setManaged(true);
+        loadTasks();
+    }
+
+    public void setupGlobalMode(Runnable closeCallback) {
+        this.isGlobalMode = true;
+        this.currentGroupId = null;
+        this.closeCallback = closeCallback;
+
+        headerTitle.setText("All My Tasks");
+        backButton.setVisible(true); backButton.setManaged(true);
+        createButton.setVisible(false); createButton.setManaged(false);
+        loadAllMyTasks();
+    }
+
+    // --- NAVIGATION ---
+
+    @FXML private void onShowCreate() {
+        taskListPane.setVisible(false); taskListPane.setManaged(false);
+        taskDetailsPane.setVisible(false); taskDetailsPane.setManaged(false);
+        createTaskPane.setVisible(true); createTaskPane.setManaged(true);
+        createButton.setVisible(false);
+    }
+
+    @FXML private void onCancelCreate() {
+        newTitleField.clear(); newDescArea.clear(); newDueDatePicker.setValue(null);
+        returnToList();
+    }
+
+    @FXML private void onBackToList() {
+        returnToList();
+    }
+
+    private void returnToList() {
+        createTaskPane.setVisible(false); createTaskPane.setManaged(false);
+        taskDetailsPane.setVisible(false); taskDetailsPane.setManaged(false);
+        taskListPane.setVisible(true); taskListPane.setManaged(true);
+        if (!isGlobalMode) createButton.setVisible(true);
+    }
+
+    @FXML private void onClose() {
+        if (closeCallback != null) closeCallback.run();
+    }
+
+    // --- LOGIC ---
+
+    private void openTaskDetails(TaskDto task) {
+        this.selectedTask = task;
+
+        detailTitleLabel.setText(task.getTitle());
+        String desc = (task.getDescription() != null ? task.getDescription() : "No description.");
+        if (task.getDueDate() != null) desc += "\nDue Date: " + task.getDueDate();
+        detailDescLabel.setText(desc);
+
+        // Скидання: "JOINED" у випадаючому списку, що відповідає "OPEN"
+        statusCombo.setValue("JOINED");
+
+        // Ховаємо кнопку "Assign" спочатку
+        assignBox.setVisible(false);
+        assignBox.setManaged(false);
+
+        taskListPane.setVisible(false); taskListPane.setManaged(false);
+        createTaskPane.setVisible(false); createTaskPane.setManaged(false);
+        taskDetailsPane.setVisible(true); taskDetailsPane.setManaged(true);
+        createButton.setVisible(false);
+
+        loadProgress();
+    }
+
+    @FXML private void onCreateTask() {
+        String title = newTitleField.getText();
+        String desc = newDescArea.getText();
+        String due = null;
+        if (newDueDatePicker.getValue() != null) {
+            due = newDueDatePicker.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
         }
 
-        String status = statusCombo.getValue();
-        if (status == null || status.isBlank()) {
-            showError("Select status.");
-            return;
-        }
+        if (title.isBlank()) { statusLabel.setText("Title required!"); return; }
 
-        Long userId;
-        String text = statusUserIdField.getText();
-
-        if (text == null || text.isBlank()) {
-            userId = SessionStore.getUserId();
-            if (userId == null) {
-                showError("User ID missing.");
-                return;
-            }
-        } else {
+        final String finalDue = due;
+        new Thread(() -> {
             try {
-                userId = Long.parseLong(text.trim());
-            } catch (NumberFormatException e) {
-                showError("User ID must be a number.");
-                return;
+                taskService.createTask(currentGroupId, title, desc, finalDue);
+                Platform.runLater(() -> {
+                    onCancelCreate();
+                    loadTasks();
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> statusLabel.setText("Error: " + e.getMessage()));
             }
-        }
-
-        try {
-            taskService.updateUserTaskStatus(selectedTaskId, userId, status);
-            showInfo("Success", "Status updated.");
-            loadProgressInternal();
-        } catch (IOException | InterruptedException e) {
-            showError("Failed: " + e.getMessage());
-        }
+        }).start();
     }
 
-    // ----------------------------
-    // ALERT HELPERS
-    // ----------------------------
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML private void onUpdateStatus() {
+        if (selectedTask == null) return;
+        String uiStatus = statusCombo.getValue();
+
+        // МАППІНГ: UI -> SERVER
+        String serverStatus = uiStatus;
+        if ("JOINED".equals(uiStatus)) {
+            serverStatus = "OPEN";
+        }
+
+        final String statusToSend = serverStatus;
+
+        new Thread(() -> {
+            try {
+                taskService.updateUserTaskStatus(selectedTask.getTaskId(), SessionStore.getUserId(), statusToSend);
+                Platform.runLater(this::loadProgress);
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
     }
 
-    private void showInfo(String header, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML private void onAssignUser() {
+        Long myId = SessionStore.getUserId();
+        if (myId == null) return;
+
+        new Thread(() -> {
+            try {
+                taskService.assignUserToTask(selectedTask.getTaskId(), myId);
+                Platform.runLater(() -> {
+                    loadProgress();
+                });
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
+    }
+
+    // --- DATA LOADING ---
+
+    private void loadTasks() {
+        new Thread(() -> {
+            try {
+                TaskDto[] tasks = taskService.getTasksForGroup(currentGroupId);
+                Platform.runLater(() -> {
+                    if (tasks != null) {
+                        tasksListView.setItems(FXCollections.observableArrayList(tasks));
+                    } else {
+                        tasksListView.getItems().clear();
+                    }
+                });
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
+    }
+
+    private void loadAllMyTasks() {
+        new Thread(() -> {
+            try {
+                GroupDto[] groups = groupService.listGroups();
+                List<TaskDto> allTasks = new ArrayList<>();
+                if (groups != null) {
+                    for (GroupDto g : groups) {
+                        try {
+                            TaskDto[] gTasks = taskService.getTasksForGroup(g.getGroupId());
+                            if (gTasks != null) allTasks.addAll(Arrays.asList(gTasks));
+                        } catch (Exception ignore) {}
+                    }
+                }
+                Platform.runLater(() -> tasksListView.setItems(FXCollections.observableArrayList(allTasks)));
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
+    }
+
+    private void loadProgress() {
+        new Thread(() -> {
+            try {
+                TaskProgressDto[] prog = taskService.getTaskProgress(selectedTask.getTaskId());
+
+                boolean amIAssigned = false;
+                Long myId = SessionStore.getUserId();
+
+                List<String> displayList = new ArrayList<>();
+
+                if (prog != null) {
+                    for (TaskProgressDto p : prog) {
+                        Long uid = p.getUserId();
+
+
+                        if (uid.equals(myId)) {
+                            amIAssigned = true;
+
+                           
+                            String myRawStatus = p.getStatus();
+                            String myUiStatus = myRawStatus;
+                            if ("OPEN".equals(myRawStatus)) myUiStatus = "JOINED";
+
+                            final String finalStatus = myUiStatus;
+                            Platform.runLater(() -> statusCombo.setValue(finalStatus));
+                        }
+
+                        String name = "User " + uid;
+                        if (userNameCache.containsKey(uid)) {
+                            name = userNameCache.get(uid);
+                        } else {
+                            try {
+                                UserDto u = userService.getUserById(uid);
+                                if (u.getName() != null) {
+                                    name = u.getName();
+                                    userNameCache.put(uid, name);
+                                }
+                            } catch (Exception ignore) {}
+                        }
+
+
+                        String displayStatus = p.getStatus();
+                        if ("OPEN".equals(displayStatus)) displayStatus = "JOINED";
+
+                        displayList.add(name + ": " + displayStatus);
+                    }
+                }
+
+                boolean finalAmIAssigned = amIAssigned;
+                Platform.runLater(() -> {
+                    progressListView.setItems(FXCollections.observableArrayList(displayList));
+
+                    // Кнопка Assign з'являється, тільки якщо я ще не в таску і це режим групи
+                    if (!isGlobalMode && !finalAmIAssigned) {
+                        assignBox.setVisible(true);
+                        assignBox.setManaged(true);
+                    } else {
+                        assignBox.setVisible(false);
+                        assignBox.setManaged(false);
+                    }
+                });
+
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
     }
 }

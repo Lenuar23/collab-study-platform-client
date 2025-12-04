@@ -3,81 +3,154 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.messenger.ui.controllers.ChatController">
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.example.messenger.ui.controllers.ChatController"
+           style="-fx-background-color: transparent;">
 
-    <left>
-        <VBox spacing="8.0">
-            <padding>
-                <Insets top="10" right="5" bottom="10" left="10"/>
-            </padding>
+    <VBox spacing="15.0"
+          maxWidth="600" maxHeight="700"
+          style="-fx-background-color: linear-gradient(to bottom right, #253745, #11212D); -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);">
 
-            <Label text="Conversations"/>
-            <ListView fx:id="conversationsList" VBox.vgrow="ALWAYS"/>
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
 
-            <Separator/>
-
-            <Label text="Start direct chat"/>
-            <HBox spacing="5.0">
-                <TextField fx:id="directUserIdField" promptText="Other user ID" HBox.hgrow="ALWAYS"/>
-                <Button text="Open" onAction="#onOpenDirectChat"/>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Button text="← Back" onAction="#onBackToMenu" fx:id="mainBackButton"
+                    style="-fx-background-color: transparent; -fx-text-fill: #CCD0CF; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            
+            <HBox alignment="CENTER" spacing="10">
+                <StackPane>
+                    <ImageView fx:id="headerAvatar" fitWidth="30" fitHeight="30" preserveRatio="true"/>
+                </StackPane>
+                <Label fx:id="headerTitle" text="My Chats" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #CCD0CF;"/>
             </HBox>
+            
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="plusButton" text="+" onAction="#onShowCreate"
+                    style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"/>
+        </HBox>
 
-            <Separator/>
+        <Separator opacity="0.3"/>
 
-            <Label text="Create group chat"/>
-            <TextField fx:id="groupNameField" promptText="Group name (optional)"/>
-            <TextField fx:id="groupParticipantsField" promptText="Participant IDs (comma separated)"/>
-            <Button text="Create group" onAction="#onCreateGroup"/>
-        </VBox>
-    </left>
+        <StackPane VBox.vgrow="ALWAYS">
+            
+            <VBox fx:id="chatListContainer" spacing="10">
+                <ListView fx:id="conversationsList" VBox.vgrow="ALWAYS"
+                          style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0;"/>
+            </VBox>
 
-    <center>
-        <BorderPane>
-            <top>
-                <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
-                    <Label text="Conversation:"/>
-                    <Label fx:id="activeConversationLabel" text="None"/>
-                    <Button text="Stats" onAction="#onShowStats"/>
-                    <Button text="Tasks" onAction="#onOpenTasks"/>
-                    <Button text="Delete selected" onAction="#onDeleteMessage"/>
-                    <Button text="Edit selected" onAction="#onEditMessage"/>
-                    <Button text="Participants" onAction="#onShowParticipants"/>
-                    <TextField fx:id="addParticipantField" promptText="Add user ID"/>
-                    <Button text="Add" onAction="#onAddParticipant"/>
-                    <Button text="Remove" onAction="#onRemoveParticipant"/>
-                </HBox>
-            </top>
-
-            <center>
-                <VBox spacing="5.0">
-                    <HBox spacing="5.0">
-                        <padding>
-                            <Insets top="0" right="10" bottom="0" left="10"/>
-                        </padding>
-                        <TextField fx:id="searchField" promptText="Search in messages" HBox.hgrow="ALWAYS"/>
-                        <Button text="Search" onAction="#onSearch"/>
-                        <Button text="Clear" onAction="#onClearSearch"/>
-                    </HBox>
-
-                    <ListView fx:id="messagesList" VBox.vgrow="ALWAYS"/>
+            <VBox fx:id="createChatPane" spacing="15" visible="false" managed="false" alignment="CENTER"
+                  style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
+                
+                <Label text="Start Direct Chat" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                
+                <VBox spacing="5" maxWidth="400">
+                    <Label text="Enter User ID:" style="-fx-text-fill: #9BA8AB; -fx-font-size: 12px;"/>
+                    <TextField fx:id="newChatUserIdField" promptText="e.g. 5"
+                               style="-fx-background-color: #253745; -fx-text-fill: white; -fx-background-radius: 5;"/>
                 </VBox>
-            </center>
 
-            <bottom>
-                <HBox spacing="5.0" alignment="CENTER_LEFT">
-                    <padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
-                    <TextField fx:id="messageField" promptText="Type a message" HBox.hgrow="ALWAYS"/>
-                    <Button text="Send" onAction="#onSendMessage"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Cancel" onAction="#onCancelCreate"
+                            style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Open Chat" onAction="#onCreateChat"
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;"/>
                 </HBox>
-            </bottom>
-        </BorderPane>
-    </center>
-</BorderPane>
+            </VBox>
+            
+            <VBox fx:id="participantsPane" spacing="15" visible="false" managed="false"
+                  style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
+                
+                <Label text="Participants" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                
+                <ListView fx:id="participantsList" VBox.vgrow="ALWAYS" 
+                          style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.2); -fx-border-color: #2c3e50;"/>
+                
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                     <Button text="Delete Chat" onAction="#onDeleteChat"
+                            style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-cursor: hand;"/>
+                     <Region HBox.hgrow="ALWAYS"/>
+                     <Button text="Close" onAction="#onCloseParticipants"
+                            style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="chatViewContainer" spacing="10" visible="false" managed="false">
+                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 5 0;">
+                    <Button text="Participants" onAction="#onShowParticipants" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-font-size: 10px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchField" promptText="Search..." style="-fx-background-color: rgba(0,0,0,0.2); -fx-text-fill: white; -fx-font-size: 10px;"/>
+                </HBox>
+
+                <ListView fx:id="messagesList" VBox.vgrow="ALWAYS"
+                          style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.2);"/>
+
+                <HBox fx:id="messageActionsBox" visible="false" managed="false" alignment="CENTER_LEFT" spacing="10" 
+                      style="-fx-background-color: #2c3e50; -fx-padding: 5; -fx-background-radius: 5;">
+                    <Label text="Selected:" style="-fx-text-fill: #bdc3c7; -fx-font-size: 10px;"/>
+                    <Button text="Edit" onAction="#onEditMessage" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                    <Button text="Delete" onAction="#onDeleteMessage" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="✕" onAction="#onCancelMessageAction" style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                </HBox>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="messageField" promptText="Type a message..." HBox.hgrow="ALWAYS"
+                               style="-fx-background-color: #253745; -fx-text-fill: white; -fx-background-radius: 5;"/>
+                    <Button text="Send" onAction="#onSendMessage"
+                            style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="deleteConfirmationPane" spacing="15" visible="false" managed="false" alignment="CENTER"
+                  style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
+                
+                <Label text="Delete Chat" style="-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label text="Are you sure you want to leave and delete this chat?" 
+                       textAlignment="CENTER" wrapText="true"
+                       style="-fx-text-fill: #bdc3c7; -fx-font-size: 14px;"/>
+                
+                <HBox spacing="15" alignment="CENTER">
+                    <Button text="Cancel" onAction="#onCancelDeleteConfirmation"
+                            style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Yes, Delete" onAction="#onConfirmDeleteChat"
+                            style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="editMessagePane" spacing="15" visible="false" managed="false" alignment="CENTER"
+                  style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
+                <Label text="Edit Message" style="-fx-text-fill: #f39c12; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <TextField fx:id="editMessageTextField" style="-fx-background-color: #253745; -fx-text-fill: white; -fx-background-radius: 5;"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Cancel" onAction="#onCancelEdit" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Save" onAction="#onConfirmEdit" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-cursor: hand;"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="deleteMessagePane" spacing="15" visible="false" managed="false" alignment="CENTER"
+                  style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
+                <Label text="Delete Message" style="-fx-text-fill: #c0392b; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label text="Are you sure?" style="-fx-text-fill: #bdc3c7; -fx-font-size: 14px;"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Cancel" onAction="#onCancelDeleteMessage" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Delete" onAction="#onConfirmDeleteMessage" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-cursor: hand;"/>
+                </HBox>
+            </VBox>
+
+        </StackPane>
+
+        <VBox visible="false" managed="false">
+             <TextField fx:id="groupNameField"/>
+             <TextField fx:id="groupParticipantsField"/>
+             <TextField fx:id="directUserIdField"/>
+             <TextField fx:id="addParticipantField"/>
+        </VBox>
+        
+    </VBox>
+</StackPane>

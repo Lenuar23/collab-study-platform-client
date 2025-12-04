@@ -1,302 +1,228 @@
 package com.example.messenger.ui.controllers;
 
 import com.example.messenger.dto.GroupDto;
+import com.example.messenger.net.ConversationService;
 import com.example.messenger.net.GroupService;
-import com.example.messenger.ui.controllers.TasksController;
+import com.example.messenger.store.SessionStore;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.util.Collections;
 
 public class GroupsController {
 
-    @FXML
-    private ListView<String> groupsList;
+    @FXML private ListView<GroupDto> groupsListView;
 
-    // Selected group details
-    @FXML
-    private Label selectedGroupLabel;
-    @FXML
-    private Label groupIdLabel;
-    @FXML
-    private Label groupOwnerLabel;
-    @FXML
-    private Label groupCreatedAtLabel;
+    // ПОВЕРНУТО ТИП НА VBox
+    @FXML private VBox createGroupPane;
+    @FXML private TextField newGroupName;
+    @FXML private TextField newGroupDesc;
 
-    @FXML
-    private TextField editNameField;
-    @FXML
-    private TextField editDescriptionField;
-    @FXML
-    private TextField editAvatarField;
-
-    @FXML
-    private ListView<String> membersList;
-    @FXML
-    private TextField addMemberField;
-
-    // Create group form
-    @FXML
-    private TextField nameField;
-    @FXML
-    private TextField descriptionField;
-    @FXML
-    private TextField avatarField;
+    @FXML private Label errorLabel;
 
     private final GroupService groupService = new GroupService();
-    private List<GroupDto> currentGroups = new ArrayList<>();
-    private GroupDto selectedGroup = null;
+    private final ConversationService conversationService = new ConversationService();
+
+    private StackPane rootStack;
+    private Runnable closeCallback;
+
+    public void setup(StackPane rootStack, Runnable closeCallback) {
+        this.rootStack = rootStack;
+        this.closeCallback = closeCallback;
+        loadGroups();
+    }
 
     @FXML
-    private void initialize() {
-        groupsList.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) {
-                return;
-            }
-            int idx = newVal.intValue();
-            if (idx >= 0 && idx < currentGroups.size()) {
-                showGroupDetails(currentGroups.get(idx));
+    public void initialize() {
+        groupsListView.setCellFactory(param -> new ListCell<GroupDto>() {
+            @Override
+            protected void updateItem(GroupDto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    // --- ВІДНОВЛЕНО ТЕМНИЙ СТИЛЬ ---
+                    HBox box = new HBox(15);
+                    box.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    // Використовуємо оригінальний темний колір
+                    box.setStyle("-fx-padding: 10; -fx-background-color: #253745; -fx-background-radius: 5; -fx-cursor: hand;");
+
+                    // Аватар
+                    ImageView avatarView = new ImageView();
+                    avatarView.setFitWidth(40);
+                    avatarView.setFitHeight(40);
+                    avatarView.setPreserveRatio(true);
+                    Circle clip = new Circle(20, 20, 20);
+                    avatarView.setClip(clip);
+
+                    String url = item.getAvatarUrl();
+                    if (url != null && !url.isBlank()) {
+                        if (!url.startsWith("http")) {
+                            url = "http://localhost:8080" + (url.startsWith("/") ? "" : "/") + url;
+                        }
+                        try {
+                            avatarView.setImage(new Image(url, true));
+                        } catch (Exception e) {}
+                    }
+
+                    // Текст
+                    Label nameLabel = new Label(item.getName());
+                    nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+
+                    String cleanDesc = item.getDescription() != null
+                            ? item.getDescription().replaceAll("\\[CHAT:\\d+\\]", "").trim()
+                            : "";
+
+                    Label descLabel = new Label(cleanDesc);
+                    descLabel.setStyle("-fx-text-fill: #9BA8AB; -fx-font-size: 12px;");
+
+                    VBox textContainer = new VBox(2, nameLabel, descLabel);
+                    HBox.setHgrow(textContainer, Priority.ALWAYS);
+
+                    Button openBtn = new Button("Open");
+                    openBtn.setStyle("-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-font-size: 11px;");
+                    openBtn.setOnAction(e -> openGroupDetails(item));
+
+                    box.getChildren().addAll(avatarView, textContainer, openBtn);
+                    box.setOnMouseClicked(e -> openGroupDetails(item));
+
+                    setGraphic(box);
+                    setStyle("-fx-background-color: transparent;");
+                }
             }
         });
-
-        refreshGroups();
     }
 
-    @FXML
-    private void onRefreshGroups() {
-        refreshGroups();
-    }
-
-    @FXML
-    private void onCreateGroup() {
-        String name = nameField.getText();
-        String desc = descriptionField.getText();
-        String avatar = avatarField.getText();
-
-        if (name == null || name.isBlank()) {
-            showError("Group name is required.");
-            return;
-        }
-
-        try {
-            groupService.createGroup(name, desc, avatar);
-            nameField.clear();
-            descriptionField.clear();
-            avatarField.clear();
-            showInfo("Success", "Group created.");
-            refreshGroups();
-        } catch (Exception e) {
-            showError("Failed to create group: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onSaveGroupChanges() {
-        if (selectedGroup == null) {
-            showError("No group selected.");
-            return;
-        }
-        String name = editNameField.getText();
-        String desc = editDescriptionField.getText();
-        if (name == null || name.isBlank()) {
-            showError("Group name cannot be empty.");
-            return;
-        }
-        try {
-            groupService.updateGroup(selectedGroup.getGroupId(), name, desc);
-            showInfo("Success", "Group updated.");
-            // refresh groups and keep selection
-            Long keepId = selectedGroup.getGroupId();
-            refreshGroups(keepId);
-        } catch (Exception e) {
-            showError("Failed to update group: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onUpdateAvatar() {
-        if (selectedGroup == null) {
-            showError("No group selected.");
-            return;
-        }
-        String avatar = editAvatarField.getText();
-        if (avatar == null || avatar.isBlank()) {
-            showError("Avatar URL cannot be empty.");
-            return;
-        }
-        try {
-            groupService.updateAvatar(selectedGroup.getGroupId(), avatar);
-            showInfo("Success", "Avatar updated.");
-            Long keepId = selectedGroup.getGroupId();
-            refreshGroups(keepId);
-        } catch (Exception e) {
-            showError("Failed to update avatar: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void onAddMember() {
-        if (selectedGroup == null) {
-            showError("No group selected.");
-            return;
-        }
-        String text = addMemberField.getText();
-        if (text == null || text.isBlank()) {
-            showError("Please enter user ID.");
-            return;
-        }
-        long userId;
-        try {
-            userId = Long.parseLong(text.trim());
-        } catch (NumberFormatException e) {
-            showError("User ID must be a number.");
-            return;
-        }
-
-        try {
-            groupService.addMember(selectedGroup.getGroupId(), userId);
-            addMemberField.clear();
-            loadMembers(selectedGroup);
-            showInfo("Success", "User added to group.");
-        } catch (Exception e) {
-            showError("Failed to add member: " + e.getMessage());
-        }
-    }
-
-    private void refreshGroups() {
-        refreshGroups(null);
-    }
-
-    private void refreshGroups(Long keepSelectedId) {
-        try {
-            GroupDto[] arr = groupService.listGroups();
-            currentGroups = (arr == null) ? new ArrayList<>() : new ArrayList<>(Arrays.asList(arr));
-
-            ObservableList<String> items = FXCollections.observableArrayList();
-            for (GroupDto g : currentGroups) {
-                items.add(g.toString());
-            }
-            groupsList.setItems(items);
-
-            if (currentGroups.isEmpty()) {
-                clearGroupDetails();
-                return;
-            }
-
-            int indexToSelect = 0;
-            if (keepSelectedId != null) {
-                for (int i = 0; i < currentGroups.size(); i++) {
-                    GroupDto g = currentGroups.get(i);
-                    if (g.getGroupId() != null && g.getGroupId().equals(keepSelectedId)) {
-                        indexToSelect = i;
-                        break;
+    private void loadGroups() {
+        new Thread(() -> {
+            try {
+                GroupDto[] groups = groupService.listGroups();
+                Platform.runLater(() -> {
+                    if (groups != null) {
+                        groupsListView.setItems(FXCollections.observableArrayList(groups));
                     }
-                }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            groupsList.getSelectionModel().select(indexToSelect);
-            showGroupDetails(currentGroups.get(indexToSelect));
-        } catch (Exception e) {
-            showError("Failed to load groups: " + e.getMessage());
-        }
+        }).start();
     }
 
-    private void showGroupDetails(GroupDto group) {
-        selectedGroup = group;
-        if (group == null) {
-            clearGroupDetails();
-            return;
-        }
-
-        selectedGroupLabel.setText(group.getName() != null ? group.getName() : "Group");
-        groupIdLabel.setText("ID: " + group.getGroupId());
-        groupOwnerLabel.setText("Owner: " + group.getOwnerUserId());
-        groupCreatedAtLabel.setText("Created: " + (group.getCreatedAt() != null ? group.getCreatedAt() : "-"));
-
-        editNameField.setText(group.getName() != null ? group.getName() : "");
-        editDescriptionField.setText(group.getDescription() != null ? group.getDescription() : "");
-        editAvatarField.setText(group.getAvatarUrl() != null ? group.getAvatarUrl() : "");
-
-        loadMembers(group);
-    }
-
-    private void loadMembers(GroupDto group) {
-        if (group == null) {
-            membersList.setItems(FXCollections.observableArrayList());
-            return;
-        }
+    private void openGroupDetails(GroupDto group) {
         try {
-            Long[] memberIds = groupService.getGroupMembers(group.getGroupId());
-            ObservableList<String> items = FXCollections.observableArrayList();
-            if (memberIds != null) {
-                for (Long id : memberIds) {
-                    items.add("User " + id);
-                }
-            }
-            membersList.setItems(items);
-        } catch (Exception e) {
-            showError("Failed to load members: " + e.getMessage());
-        }
-    }
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/group_details.fxml"));
+            Parent detailsView = loader.load();
 
-    private void clearGroupDetails() {
-        selectedGroup = null;
-        selectedGroupLabel.setText("No group selected");
-        groupIdLabel.setText("ID: -");
-        groupOwnerLabel.setText("Owner: -");
-        groupCreatedAtLabel.setText("Created: -");
-        editNameField.clear();
-        editDescriptionField.clear();
-        editAvatarField.clear();
-        membersList.setItems(FXCollections.observableArrayList());
-    }
+            GroupDetailsController controller = loader.getController();
+            controller.setGroupData(group, groupService, () -> {
+                rootStack.getChildren().remove(detailsView);
+                loadGroups();
+            });
 
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
+            StackPane.setAlignment(detailsView, javafx.geometry.Pos.CENTER);
+            rootStack.getChildren().add(detailsView);
 
-    private void showInfo(String header, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-
-    @FXML
-    private void onOpenTasks() {
-        if (selectedGroup == null) {
-            showError("No group selected.");
-            return;
-        }
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/tasks.fxml"));
-            Parent root = loader.load();
-    
-            TasksController controller = loader.getController();
-            controller.setGroup(selectedGroup.getGroupId(), selectedGroup.getName());
-    
-            Stage stage = new Stage();
-            stage.setTitle("Tasks - Group " + selectedGroup.getGroupId());
-            stage.setScene(new Scene(root));
-            stage.initOwner(groupsList.getScene().getWindow());
-            stage.show();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            showError("Failed to open tasks window: " + e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Could not open group details: " + e.getMessage());
+            alert.show();
+        }
+    }
+
+    // --- СТВОРЕННЯ ГРУПИ ---
+
+    @FXML private void onShowCreate() {
+        hideError();
+        // Просто перемикаємо видимість VBox
+        createGroupPane.setVisible(true);
+        createGroupPane.setManaged(true);
+        groupsListView.setVisible(false);
+        groupsListView.setManaged(false);
+    }
+
+    @FXML private void onCancelCreate() {
+        createGroupPane.setVisible(false);
+        createGroupPane.setManaged(false);
+        groupsListView.setVisible(true);
+        groupsListView.setManaged(true);
+        newGroupName.clear();
+        newGroupDesc.clear();
+        hideError();
+    }
+
+    @FXML private void onCreateGroup() {
+        String name = newGroupName.getText();
+        String desc = newGroupDesc.getText();
+
+        hideError();
+
+        if (name == null || name.isBlank()) {
+            showError("Group Name is required!");
+            return;
+        }
+        if (SessionStore.getUserId() == null) {
+            showError("Session error. Please relogin.");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                long chatId = conversationService.createGroupConversation(name, Collections.emptyList());
+                String descWithChatId = (desc == null ? "" : desc) + " [CHAT:" + chatId + "]";
+                groupService.createGroup(name, descWithChatId, null);
+
+                Platform.runLater(() -> {
+                    onCancelCreate();
+                    loadGroups();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    String msg = e.getMessage();
+                    if (msg.contains("500")) msg = "Server Error (500).";
+                    else if (msg.contains("Connection refused")) msg = "Server offline.";
+                    showError("Failed: " + msg);
+                });
+            }
+        }).start();
+    }
+
+    @FXML private void onClose() {
+        if (closeCallback != null) closeCallback.run();
+    }
+
+    // --- МЕТОДИ ДЛЯ ЛЕЙБЛА ---
+
+    private void showError(String msg) {
+        if (errorLabel != null) {
+            errorLabel.setText(msg);
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        } else {
+            System.err.println("Error label missing: " + msg);
+        }
+    }
+
+    private void hideError() {
+        if (errorLabel != null) {
+            errorLabel.setVisible(false);
+            errorLabel.setManaged(false);
+            errorLabel.setText("");
         }
     }
 }

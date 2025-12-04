@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.messenger.ui.controllers.GroupDetailsController"
+      spacing="10.0"
+      style="-fx-background-color: #11212D; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 30, 0, 0, 0);"
+      stylesheets="@css/theme.css, @css/list-view.css, @css/scroll-bar.css, @css/date-picker.css"
+      maxWidth="800" maxHeight="700">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Button text="← Back" onAction="#onBack" style="-fx-background-color: transparent; -fx-text-fill: #CCD0CF; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            
+            <StackPane style="-fx-border-color: #9BA8AB; -fx-border-radius: 50; -fx-border-width: 2; -fx-padding: 2;">
+                  <ImageView fx:id="groupAvatarHeader" fitWidth="40.0" fitHeight="40.0" preserveRatio="true"/>
+            </StackPane>
+
+            <Label fx:id="groupNameLabel" text="Group Name" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="groupIdLabel" text="#ID" style="-fx-text-fill: #9BA8AB;"/>
+        </HBox>
+
+        <Separator opacity="0.2"/>
+
+        <HBox spacing="10" alignment="CENTER">
+            <ToggleButton fx:id="chatTab" text="Chat" onAction="#onTabChat" selected="true" style="-fx-base: #253745; -fx-text-fill: white;">
+                <toggleGroup><ToggleGroup fx:id="tabs"/></toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="tasksTab" text="Tasks" onAction="#onTabTasks" toggleGroup="$tabs" style="-fx-base: #253745; -fx-text-fill: white;"/>
+            <ToggleButton fx:id="settingsTab" text="Settings" onAction="#onTabSettings" toggleGroup="$tabs" style="-fx-base: #253745; -fx-text-fill: white;"/>
+        </HBox>
+
+        <StackPane VBox.vgrow="ALWAYS" style="-fx-background-color: #1b2a36; -fx-background-radius: 10;">
+            
+            <VBox fx:id="chatView" spacing="10" visible="true">
+                <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                <ListView fx:id="chatListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-control-inner-background: transparent;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="📎" onAction="#onUploadFile" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;"/>
+                    <TextField fx:id="messageField" promptText="Type a message..." HBox.hgrow="ALWAYS" style="-fx-background-color: #253745; -fx-text-fill: white;"/>
+                    <Button text="Send" onAction="#onSendMessage" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+
+            <VBox fx:id="tasksView" alignment="CENTER" visible="false">
+                <Label text="Tasks Loading..." style="-fx-text-fill: #95a5a6; -fx-font-size: 16px;"/>
+            </VBox>
+
+            <StackPane fx:id="settingsView" visible="false">
+                <Canvas fx:id="matrixCanvas" width="750" height="600" />
+                <VBox alignment="TOP_CENTER" spacing="20" pickOnBounds="false">
+                     <padding><Insets top="30"/></padding>
+                    <Label fx:id="quoteLabel" text="Wait for wisdom..." wrapText="true" maxWidth="600" textAlignment="CENTER" 
+                           style="-fx-font-family: 'Consolas'; -fx-font-size: 16px; -fx-text-fill: #00ff00; -fx-effect: dropshadow(gaussian, black, 5, 0.5, 0, 0);"/>
+                </VBox>
+                <VBox spacing="15" maxWidth="500" maxHeight="550" style="-fx-background-color: rgba(17, 33, 45, 0.9); -fx-background-radius: 15; -fx-border-color: #2c3e50; -fx-border-radius: 15; -fx-border-width: 1;">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="Group Settings" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <Button text="Change Group Avatar" onAction="#onChangeGroupAvatar" style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    </HBox>
+                    <GridPane hgap="10" vgap="10">
+                        <Label text="Name:" style="-fx-text-fill: #9BA8AB;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="editNameField" style="-fx-background-color: #253745; -fx-text-fill: white;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="Description:" style="-fx-text-fill: #9BA8AB;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="editDescField" style="-fx-background-color: #253745; -fx-text-fill: white;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    </GridPane>
+                    <Button text="Save Changes" onAction="#onSaveSettings" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Separator opacity="0.2"/>
+                    <Label text="Members" style="-fx-text-fill: white; -fx-font-size: 14px; font-weight: bold;"/>
+                    <ListView fx:id="membersListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.2); -fx-border-color: #2c3e50;"/>
+                    <HBox spacing="10">
+                        <TextField fx:id="addMemberIdField" promptText="User ID" style="-fx-background-color: #253745; -fx-text-fill: white;" HBox.hgrow="ALWAYS"/>
+                        <Button text="Add User" onAction="#onAddMember" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    </HBox>
+                    <Label fx:id="settingsInfoLabel" text="" style="-fx-text-fill: #2ecc71;"/>
+                </VBox>
+            </StackPane>
+
+            <VBox fx:id="notificationPane" visible="false" managed="false" alignment="CENTER" maxWidth="400" maxHeight="50"
+                  StackPane.alignment="BOTTOM_CENTER"
+                  style="-fx-background-radius: 10; -fx-padding: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);">
+                <StackPane.margin>
+                    <Insets bottom="20"/>
+                </StackPane.margin>
+                <Label fx:id="notificationLabel" text="Message" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+            </VBox>
+
+        </StackPane>
+    </children>
+</VBox>

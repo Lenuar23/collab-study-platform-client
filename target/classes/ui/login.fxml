@@ -53,17 +53,7 @@
                      </children>
                   </HBox>
                 
-                  <HBox alignment="CENTER_LEFT">
-                     <children>
-                        <CheckBox fx:id="rememberBox" mnemonicParsing="false" styleClass="checkbox" text="Remember me" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Hyperlink styleClass="link" text="Forgot Password?" />
-                     </children>
-                     <VBox.margin>
-                        <Insets top="-5.0" />
-                     </VBox.margin>
-                  </HBox>
-               </children>
+                  </children>
             </VBox>
 
             <VBox alignment="CENTER" maxWidth="300.0" prefWidth="300.0" spacing="10.0" styleClass="glass-card-bottom">

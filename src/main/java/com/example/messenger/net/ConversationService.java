@@ -10,6 +10,28 @@ import java.util.Map;
 
 public class ConversationService {
 
+    // --- НОВІ МЕТОДИ (Для сумісності з групами) ---
+
+    // Спрощений метод для створення чату (використовується в GroupsController)
+    public Long createGroupChat(String name) throws IOException, InterruptedException {
+        Long currentUserId = SessionStore.getUserId();
+        if (currentUserId == null) throw new IllegalStateException("User is not logged in");
+
+        // Створюємо список учасників (тільки я)
+        List<Long> participants = new ArrayList<>();
+        participants.add(currentUserId);
+
+        // Викликаємо основний метод
+        return createGroupConversation(name, participants);
+    }
+
+    // Аліас (псевдонім) для методу listUserConversations (використовується в GroupDetailsController)
+    public ConversationSummary[] getMyConversations() throws IOException, InterruptedException {
+        return listUserConversations();
+    }
+
+    // -----------------------------------------------
+
     public long createDirectConversation(long otherUserId) throws IOException, InterruptedException {
         Long currentUserId = SessionStore.getUserId();
         if (currentUserId == null) {
@@ -39,6 +61,7 @@ public class ConversationService {
         if (participantIds != null) {
             ids.addAll(participantIds);
         }
+        // Додаємо себе, якщо ще немає
         if (!ids.contains(currentUserId)) {
             ids.add(currentUserId);
         }
@@ -110,7 +133,6 @@ public class ConversationService {
         String path = "/chat/conversations/" + conversationId + "/read-receipts";
         ApiClient.post(path, request, Void.class);
     }
-
 
     public void removeParticipant(long conversationId, long userId) throws IOException, InterruptedException {
         String path = "/chat/conversations/" + conversationId + "/participants/" + userId;

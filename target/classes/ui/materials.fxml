@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.example.messenger.ui.controllers.MaterialsController"
+           style="-fx-background-color: transparent;">
+
+    <VBox fx:id="mainCard" spacing="15.0"
+          maxWidth="700" maxHeight="600"
+          style="-fx-background-color: linear-gradient(to bottom right, #253745, #11212D); -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);">
+
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Button text="← Back" onAction="#onClose"
+                    style="-fx-background-color: transparent; -fx-text-fill: #CCD0CF; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Materials &amp; Files" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #CCD0CF;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Refresh" onAction="#onRefresh"
+                    style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"/>
+        </HBox>
+
+        <Separator opacity="0.3"/>
+
+        <HBox spacing="15" VBox.vgrow="ALWAYS">
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="My Files" style="-fx-text-fill: #9BA8AB;"/>
+                <ListView fx:id="materialsList" VBox.vgrow="ALWAYS" 
+                          style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.1);"/>
+            </VBox>
+
+            <VBox fx:id="detailsPane" spacing="15" visible="false" managed="false" minWidth="250"
+                  style="-fx-background-color: #1b2a36; -fx-padding: 15; -fx-background-radius: 10;">
+                
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="File Details" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="✕" onAction="#onCloseDetails" 
+                            style="-fx-background-color: transparent; -fx-text-fill: #9BA8AB; -fx-font-weight: bold; -fx-cursor: hand;"/>
+                </HBox>
+                
+                <VBox spacing="5">
+                    <Label text="Name:" style="-fx-text-fill: #9BA8AB; -fx-font-size: 10px;"/>
+                    <Label fx:id="fileNameLabel" text="filename.ext" wrapText="true" style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+                </VBox>
+
+                <VBox spacing="5">
+                    <Label text="Type:" style="-fx-text-fill: #9BA8AB; -fx-font-size: 10px;"/>
+                    <Label fx:id="fileTypeLabel" text="TYPE" style="-fx-text-fill: #3498db;"/>
+                </VBox>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                
+                <Button text="Download to PC" onAction="#onDownload" maxWidth="Infinity"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <VBox fx:id="notificationPane" visible="false" managed="false" alignment="CENTER" maxWidth="400" maxHeight="50"
+          StackPane.alignment="BOTTOM_CENTER"
+          style="-fx-background-radius: 10; -fx-padding: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 0);">
+        <StackPane.margin>
+            <Insets bottom="20"/>
+        </StackPane.margin>
+        <Label fx:id="notificationLabel" text="Message" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+    </VBox>
+
+</StackPane>

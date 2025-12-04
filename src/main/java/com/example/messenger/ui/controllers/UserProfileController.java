@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import javafx.application.Platform;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,8 @@ public class UserProfileController {
     @FXML private ImageView avatarImageView;
     @FXML private TextField nameField;
     @FXML private Label emailLabel;
+    @FXML private Label errorLabel;
+
     @FXML private TextField idField;
 
     // ГРА
@@ -230,16 +233,43 @@ public class UserProfileController {
     @FXML private void onEnableEdit() { setEditMode(true); }
     @FXML private void onCancelEdit() { selectedAvatarFile = null; updateUI(); setEditMode(false); }
     @FXML private void onBack() { if (onCloseRequest != null) onCloseRequest.run(); }
-    @FXML private void onChooseAvatar(ActionEvent event) {
-        Window window = profileRoot.getScene().getWindow();
+    @FXML
+    private void onChooseAvatar(ActionEvent event) {
+        clearError();
+
+        // 1. Створюємо FileChooser (вікно нам тут більше не потрібне для прив'язки)
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
-        File file = fileChooser.showOpenDialog(window);
-        if (file != null) {
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+        );
+
+        // 2. ВАЖЛИВА ЗМІНА: Передаємо NULL замість window.
+        // Це робить діалог незалежним і запобігає багу зі згортанням вікна на Linux.
+        File file = fileChooser.showOpenDialog(null); 
+        
+        if (file == null) return;
+
+        long maxSize = 9 * 1024 * 1024; // 2 MB
+
+        if (file.length() > maxSize) {
+            showError("The file is too large! Max size — 9 MB.");
+            return;
+        }
+
+        String name = file.getName().toLowerCase();
+        if (!(name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"))) {
+            showError("Wrong image format. Applied: PNG, JPG, JPEG.");
+            return;
+        }
+
+        // Залишаємо runLater для безпечного оновлення картинки
+        Platform.runLater(() -> {
             selectedAvatarFile = file;
             avatarImageView.setImage(new Image(file.toURI().toString()));
-        }
+            profileRoot.requestLayout();
+        });
     }
+
 
     @FXML
     private void onSave(ActionEvent event) {
@@ -272,4 +302,18 @@ public class UserProfileController {
         if (!url.startsWith("http")) url = "http://localhost:8080" + (url.startsWith("/") ? "" : "/") + url;
         try { avatarImageView.setImage(new Image(url, true)); } catch (Exception e) {}
     }
+
+    private void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private void clearError() {
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        errorLabel.setText("");
+    }
+
+
 }

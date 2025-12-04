@@ -1,0 +1,113 @@
+/* datepicker.css */
+
+/* --- 1. Стилізація самого поля вводу (Input Field) --- */
+.date-picker {
+    -fx-background-color: -color-mid-1; /* Темний фон контейнера */
+    -fx-background-radius: 5;
+    -fx-border-color: -color-mid-2;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+}
+
+/* Текстове поле всередині */
+.date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: -color-light-1;
+}
+
+/* Кнопка календаря праворуч */
+.date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.date-picker > .arrow-button > .arrow {
+    -fx-background-color: -color-light-2; /* Колір іконки календаря */
+    -fx-padding: 3px; /* Розмір іконки */
+}
+
+.date-picker > .arrow-button:hover > .arrow {
+    -fx-background-color: white;
+}
+
+
+/* --- 2. Стилізація випадаючого вікна (Popup Calendar) --- */
+.date-picker-popup {
+    -fx-background-color: -color-dark-2; /* Основний фон календаря */
+    -fx-border-color: -color-mid-2;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
+}
+
+/* Верхня частина (Місяць та Рік) */
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: -color-dark-1;
+}
+
+.date-picker-popup > .month-year-pane > .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* Стрілки навігації вліво/вправо */
+.date-picker-popup > .month-year-pane > .spinner > .button .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button .right-arrow {
+    -fx-background-color: -color-light-2;
+}
+
+.date-picker-popup > .month-year-pane > .spinner > .button:hover .left-arrow,
+.date-picker-popup > .month-year-pane > .spinner > .button:hover .right-arrow {
+    -fx-background-color: white;
+}
+
+
+/* --- 3. Стилізація сітки днів (Grid) --- */
+.date-picker-popup > .calendar-grid {
+    -fx-background-color: -color-dark-2;
+}
+
+/* Назви днів тижня (Пн, Вт...) */
+.date-picker-popup > .calendar-grid > .day-name-cell {
+    -fx-text-fill: -color-light-1;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+/* Клітинки з датами */
+.date-picker-popup > .calendar-grid > .date-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-light-2;
+    -fx-border-color: transparent;
+}
+
+/* При наведенні на дату */
+.date-picker-popup > .calendar-grid > .date-cell:hover {
+    -fx-background-color: -color-mid-1;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+/* Вибрана дата (Selected) - Акцентний колір (наприклад, зелений як на скріншоті) */
+.date-picker-popup > .calendar-grid > .selected-cell {
+    -fx-background-color: #27ae60; /* Зелений акцент */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 3;
+}
+
+/* Сьогоднішня дата (Today) */
+.date-picker-popup > .calendar-grid > .today {
+    -fx-border-color: #27ae60;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-text-fill: #2ecc71;
+}
+
+/* Дати з інших місяців (сірі) */
+.date-picker-popup > .calendar-grid > .previous-month,
+.date-picker-popup > .calendar-grid > .next-month {
+    -fx-text-fill: #34495e; /* Дуже тьмяний колір */
+}

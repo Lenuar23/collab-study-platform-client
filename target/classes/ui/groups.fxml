@@ -3,70 +3,46 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Circle?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.messenger.ui.controllers.GroupsController"
-            styleClass="app-root">
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.messenger.ui.controllers.GroupsController"
+      spacing="15.0"
+      style="-fx-background-color: linear-gradient(to bottom right, #253745, #11212D); -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);"
+      maxWidth="600" maxHeight="700">
 
-    <top>
-        <HBox spacing="8.0" alignment="CENTER_LEFT">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-            <Label text="Groups"/>
-            <Button text="Refresh" onAction="#onRefreshGroups"/>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Button text="← Back" onAction="#onClose" style="-fx-background-color: transparent; -fx-text-fill: #CCD0CF; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="My Groups" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #CCD0CF;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="+" onAction="#onShowCreate" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"/>
         </HBox>
-    </top>
 
-    <center>
-        <ListView fx:id="groupsList"/>
-    </center>
+        <Separator opacity="0.3"/>
 
-    <right>
-        <ScrollPane fitToWidth="true">
-            <content>
-                <VBox spacing="8.0">
-                    <padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
+        <ListView fx:id="groupsListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0;"/>
 
-                    <!-- Selected group details -->
-                    <Label text="Selected group"/>
-                    <Label fx:id="selectedGroupLabel" text="No group selected"/>
-                    <Label fx:id="groupIdLabel" text="ID: -"/>
-                    <Label fx:id="groupOwnerLabel" text="Owner: -"/>
-                    <Label fx:id="groupCreatedAtLabel" text="Created: -"/>
+        <VBox fx:id="createGroupPane" spacing="10" style="-fx-background-color: #11212D; -fx-padding: 15; -fx-background-radius: 10;" visible="false" managed="false">
+            
+            <Label text="Create New Group" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+            
+            <TextField fx:id="newGroupName" promptText="Group Name" style="-fx-background-color: #253745; -fx-text-fill: white;"/>
+            <TextField fx:id="newGroupDesc" promptText="Description" style="-fx-background-color: #253745; -fx-text-fill: white;"/>
+            
+            <Label fx:id="errorLabel" textFill="#ff6b6b" wrapText="true" visible="false" managed="false" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
 
-                    <TextField fx:id="editNameField" promptText="Group name"/>
-                    <TextField fx:id="editDescriptionField" promptText="Description"/>
-                    <TextField fx:id="editAvatarField" promptText="Avatar URL"/>
-                    <HBox spacing="5.0">
-                        <Button text="Save name/description" onAction="#onSaveGroupChanges"/>
-                        <Button text="Update avatar" onAction="#onUpdateAvatar"/>
-                        <Button text="Tasks" onAction="#onOpenTasks"/>
-                    </HBox>
-
-                    <Separator/>
-
-                    <Label text="Members"/>
-                    <ListView fx:id="membersList" prefHeight="150"/>
-
-                    <HBox spacing="5.0">
-                        <TextField fx:id="addMemberField" promptText="User ID" HBox.hgrow="ALWAYS"/>
-                        <Button text="Add" onAction="#onAddMember"/>
-                    </HBox>
-
-                    <Separator/>
-
-                    <!-- Create group section -->
-                    <Label text="Create new group"/>
-                    <TextField fx:id="nameField" promptText="Group name"/>
-                    <TextField fx:id="descriptionField" promptText="Description (optional)"/>
-                    <TextField fx:id="avatarField" promptText="Avatar URL (optional)"/>
-                    <Button text="Create" onAction="#onCreateGroup"/>
-                </VBox>
-            </content>
-        </ScrollPane>
-    </right>
-</BorderPane>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancel" onAction="#onCancelCreate" style="-fx-background-color: #4A5C6A; -fx-text-fill: white;"/>
+                <Button text="Create" onAction="#onCreateGroup" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </children>
+</VBox>

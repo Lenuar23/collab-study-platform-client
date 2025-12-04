@@ -1,11 +1,12 @@
 package com.example.messenger.net;
 
 import com.example.messenger.dto.MessageDto;
-import com.example.messenger.dto.SendMessageRequest;
 import com.example.messenger.dto.UpdateMessageRequest;
 import com.example.messenger.store.SessionStore;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MessageService {
 
@@ -14,13 +15,21 @@ public class MessageService {
         return ApiClient.get(path, MessageDto[].class);
     }
 
+    public MessageDto[] getGroupMessages(Long groupId) throws IOException, InterruptedException {
+        return ApiClient.get("/groups/" + groupId + "/messages", MessageDto[].class);
+    }
+
     public void sendMessage(long conversationId, String content) throws IOException, InterruptedException {
         Long senderId = SessionStore.getUserId();
-        if (senderId == null) {
-            throw new IllegalStateException("User is not logged in");
-        }
-        SendMessageRequest request = new SendMessageRequest(conversationId, senderId, content);
-        ApiClient.post("/chat/messages", request, Void.class);
+        if (senderId == null) throw new IllegalStateException("User is not logged in");
+
+        // ВИПРАВЛЕННЯ: Використовуємо Map замість класу SimpleMessageRequest
+        Map<String, Object> body = new HashMap<>();
+        body.put("conversationId", conversationId);
+        body.put("senderUserId", senderId);
+        body.put("content", content);
+
+        ApiClient.post("/chat/messages", body, Void.class);
     }
 
     public void deleteMessage(long messageId) throws IOException, InterruptedException {

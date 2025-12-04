@@ -1,86 +1,128 @@
 /* ===========================================
-   CORE APP BACKGROUND / FONT
+   GLOBAL VARIABLES & ROOT
    =========================================== */
+.root {
+   
+    -fx-base: #11212D;
+    -fx-background: #11212D;
+    -fx-control-inner-background: #11212D;
+}
 
 .app-root {
-    -fx-background-color: -app-bg;
-    -fx-text-fill: -app-text;
-    -fx-font-size: 16px;
+    -fx-background-color: linear-gradient(to bottom right, #253745, #11212D);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
 }
 
 /* ===========================================
-   LABELS
+   SCROLLBAR 
    =========================================== */
 
-.label {
-    -fx-text-fill: -app-text;
-    -fx-font-size: 16px;
+
+.scroll-bar,
+.scroll-bar:horizontal,
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-block-increment: 10;
 }
 
-.header-label {
-    -fx-font-weight: bold;
-    -fx-font-size: 18px;
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+    -fx-shape: null; 
 }
 
-.sidebar-section-title {
-    -fx-text-fill: -app-text-muted;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: null;
+    -fx-padding: 0;
+}
+
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.2); 
+    -fx-background-radius: 10em;
+    
+  
+    -fx-background-insets: 0 5 0 5; 
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 10em;
+    -fx-background-insets: 5 0 5 0;
+}
+
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-background-insets: 0 4 0 4;
+}
+
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+    -fx-background-insets: 4 0 4 0;
+}
+
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+
+.corner {
+    -fx-background-color: transparent;
 }
 
 /* ===========================================
-   HEADER BAR
+   LIST VIEW & CELLS
    =========================================== */
 
-.header-bar {
-    -fx-background-color: -app-bg-header;
-    -fx-border-color: -app-border;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 10 16 10 16;
-    -fx-spacing: 12;
-}
-
-.header-bar .button {
-    -fx-background-color: -app-bg-elevated;
-    -fx-border-color: -app-border-soft;
-}
-
-/* ===========================================
-   SIDEBAR
-   =========================================== */
-
-.chat-sidebar {
-    -fx-background-color: -app-bg-sidebar;
-    -fx-border-color: -app-border;
-    -fx-border-width: 0 1 0 0;
-    -fx-padding: 12;
-    -fx-spacing: 10;
-}
-
-/* ListView appearance */
 .list-view {
     -fx-background-color: transparent;
-    -fx-border-color: -app-border-soft;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
-/* List cells */
+
+.list-view .virtual-flow .clipped-container {
+    -fx-background-color: transparent;
+}
+.list-view .virtual-flow .sheet {
+    -fx-background-color: transparent;
+}
+
 .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: -app-text;
-    -fx-padding: 10 12 10 12;
-    -fx-font-size: 16px;
-    -fx-background-insets: 0;
-    -fx-background-radius: 8;
+    -fx-text-fill: white;
+    -fx-padding: 0 0 0 0; 
+    -fx-border-width: 0;
+}
+
+.list-cell:empty {
+    -fx-background-color: transparent;
 }
 
 .list-cell:filled:selected {
-    -fx-background-color: -app-accent-muted;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
 }
 
 .list-cell:filled:hover {
-    -fx-background-color: -app-bg-elevated;
+    -fx-background-color: rgba(255, 255, 255, 0.03);
 }
 
 /* ===========================================
@@ -88,15 +130,20 @@
    =========================================== */
 
 .text-field {
-    -fx-background-color: -app-bg-input;
-    -fx-text-fill: -app-text;
-    -fx-prompt-text-fill: -app-text-muted;
+    -fx-background-color: #253745;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #9BA8AB;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-border-color: -app-border-soft;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
     -fx-border-width: 1;
     -fx-padding: 8 10 8 10;
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
+}
+
+.text-field:focused {
+    -fx-border-color: #2ecc71; /* Зелена рамка при фокусі */
+    -fx-background-color: #2c3e50;
 }
 
 /* ===========================================
@@ -106,109 +153,82 @@
 .button {
     -fx-background-radius: 8;
     -fx-border-radius: 8;
-    -fx-background-color: -app-bg-elevated;
-    -fx-border-color: -app-border-soft;
-    -fx-border-width: 1;
-    -fx-text-fill: -app-text;
-    -fx-padding: 8 16 8 16;
-    -fx-font-size: 16px;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
     -fx-cursor: hand;
+    -fx-padding: 8 16;
 }
 
 .button:hover {
-    -fx-background-color: -app-bg-input;
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 1);
 }
 
 .button:pressed {
-    -fx-background-color: -app-accent-muted;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-translate-y: 1;
 }
 
-/* Акцентні кнопки, якщо захочеш їх юзати */
-.accent-button {
-    -fx-background-color: -app-accent;
+/* ===========================================
+   LABELS & HEADERS
+   =========================================== */
+
+.label {
     -fx-text-fill: white;
-    -fx-border-color: transparent;
 }
 
-.accent-button:hover {
-    -fx-background-color: -app-accent-hover;
+.header-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #CCD0CF;
 }
+/* ... (Ваш попередній код) ... */
 
 /* ===========================================
-   SEARCH BAR & MESSAGE BAR
+   DARK COMBO BOX
    =========================================== */
 
-.search-bar {
-    -fx-background-color: -app-bg-header;
-    -fx-border-color: -app-border;
-    -fx-border-width: 0 0 1 0;
-    -fx-padding: 10 12 10 12;
-    -fx-spacing: 10;
+.combo-box {
+    -fx-background-color: #253745;
+    -fx-border-color: rgba(255,255,255,0.1);
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
 }
 
-.message-input-bar {
-    -fx-background-color: -app-bg-header;
-    -fx-border-color: -app-border;
-    -fx-border-width: 1 0 0 0;
-    -fx-padding: 10 12 10 12;
-    -fx-spacing: 10;
-}
 
-/* ===========================================
-   SCROLLBAR
-   =========================================== */
-
-.scroll-bar:horizontal, .scroll-bar:vertical {
+.combo-box .list-cell {
+    -fx-text-fill: white; 
     -fx-background-color: transparent;
 }
 
-.thumb {
-    -fx-background-color: derive(-app-border-soft, 10%);
-    -fx-background-radius: 4;
-}
 
-.track {
+.combo-box .arrow {
+    -fx-background-color: #9BA8AB;
+}
+.combo-box .arrow-button {
     -fx-background-color: transparent;
 }
 
-/* ===========================================
-   CARDS / PANELS
-   =========================================== */
 
-.card {
-    -fx-background-color: -app-bg-elevated;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-color: -app-border;
-    -fx-padding: 10;
+.combo-box-popup .list-view {
+    -fx-background-color: #11212D;
+    -fx-border-color: #2c3e50;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);
 }
 
-/* ===========================================
-   MESSAGE AREA
-   =========================================== */
-
-.messages-root {
-    -fx-background-color: -app-bg;
-    -fx-padding: 10;
+.combo-box-popup .list-cell {
+    -fx-text-fill: #CCD0CF;
+    -fx-background-color: transparent;
+    -fx-padding: 8 10 8 10;
 }
 
-.msg-bubble-mine {
-    -fx-background-color: -app-accent;
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #34495e;
     -fx-text-fill: white;
-    -fx-background-radius: 12;
-    -fx-padding: 8 12 8 12;
-    -fx-max-width: 60%;
 }
 
-.msg-bubble-other {
-    -fx-background-color: -app-bg-elevated;
-    -fx-text-fill: -app-text;
-    -fx-background-radius: 12;
-    -fx-padding: 8 12 8 12;
-    -fx-max-width: 60%;
-}
-
-.list-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 6;
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
 }

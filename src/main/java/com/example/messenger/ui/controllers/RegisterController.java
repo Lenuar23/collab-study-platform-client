@@ -1,14 +1,12 @@
 package com.example.messenger.ui.controllers;
 
 import com.example.messenger.net.AuthService;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 public class RegisterController {
@@ -18,43 +16,72 @@ public class RegisterController {
     @FXML private PasswordField passwordField;
     @FXML private PasswordField confirmPasswordField;
 
-    // Лейбл для помилок
+    @FXML private Button registerButton; // Додали кнопку, щоб можна було її вимикати
     @FXML private Label errorLabel;
 
     private final AuthService authService = new AuthService();
 
     @FXML
     protected void onRegister(ActionEvent event) {
-        hideError(); // Очищуємо стару помилку
+        hideError(); // Ховаємо попередні повідомлення
 
         String name = nameField.getText().strip();
         String email = emailField.getText().strip();
         String password = passwordField.getText().strip();
         String confirm = confirmPasswordField != null ? confirmPasswordField.getText().strip() : "";
 
+        // 1. Перевірка на порожні поля
         if (name.isBlank() || email.isBlank() || password.isBlank()) {
             showError("Please fill in all fields.");
             return;
         }
 
-        // Можна додати перевірку паролів, якщо confirmPasswordField використовується
-        // if (!password.equals(confirm)) { showError("Passwords do not match!"); return; }
+        // 2. Перевірка збігу паролів (НОВЕ)
+        if (!password.equals(confirm)) {
+            showError("Passwords do not match!");
+            return;
+        }
 
         try {
+            // Спроба реєстрації
             authService.register(name, email, password);
 
-            // Якщо успішно - можна показати Alert (інформацію), бо далі йде перехід на логін
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText(null);
-            alert.setContentText("Registration successful! You can now log in.");
-            alert.showAndWait();
-
-            openLoginScreen();
+            // ЯКЩО УСПІШНО -> Запускаємо сценарій "Плавний успіх"
+            handleSuccessRegistration();
 
         } catch (Exception e) {
             showError("Registration failed: " + e.getMessage());
         }
+    }
+
+    // Логіка успішної реєстрації (Варіант 2Б)
+    private void handleSuccessRegistration() {
+        if (errorLabel != null) {
+            // Змінюємо стиль на "Успіх" (Зелений колір)
+            errorLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold; -fx-font-size: 14px;");
+            errorLabel.setText("Registration successful! Redirecting...");
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
+        }
+
+        // Блокуємо інтерфейс, щоб користувач нічого не зламав під час паузи
+        if (registerButton != null) registerButton.setDisable(true);
+        nameField.setEditable(false);
+        emailField.setEditable(false);
+        passwordField.setEditable(false);
+        confirmPasswordField.setEditable(false);
+
+        // Запускаємо таймер в окремому потоці, щоб не завис інтерфейс
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500); // Чекаємо 1.5 секунди (щоб користувач прочитав текст)
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // Повертаємось у головний потік JavaFX для зміни сцени
+            Platform.runLater(this::openLoginScreen);
+        }).start();
     }
 
     @FXML
@@ -66,14 +93,15 @@ public class RegisterController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/login.fxml"));
             Scene scene = new Scene(loader.load());
-            // Підключаємо стилі, якщо вони не підключені в самому fxml
-            // scene.getStylesheets().add(getClass().getResource("/ui/css/theme.css").toExternalForm());
-
+            
+            // Отримуємо поточне вікно через будь-який елемент (наприклад, emailField)
             Stage stage = (Stage) emailField.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("Messenger - Login");
             stage.show();
         } catch (Exception e) {
+            // Якщо раптом перехід не вдався, показуємо це червоним
+            if (errorLabel != null) errorLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 12px;");
             showError("Unable to open login screen: " + e.getMessage());
             e.printStackTrace();
         }
@@ -81,11 +109,17 @@ public class RegisterController {
 
     private void showError(String message) {
         if (errorLabel != null) {
+            // ВАЖЛИВО: Скидаємо стиль назад на червоний (для помилок)
+            errorLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 12px;");
+            
             errorLabel.setText(message);
             errorLabel.setVisible(true);
             errorLabel.setManaged(true);
+            
+            // Розблокуємо кнопку, якщо це була помилка, щоб можна було спробувати ще раз
+            if (registerButton != null) registerButton.setDisable(false);
         } else {
-            // Фолбек на Alert, якщо лейбла немає
+            // Запасний варіант, якщо лейбла немає
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setContentText(message);
             alert.showAndWait();
