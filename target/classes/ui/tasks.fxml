@@ -20,11 +20,11 @@
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Button fx:id="backButton" text="← Back" onAction="#onClose" visible="false" managed="false"
                     style="-fx-background-color: transparent; -fx-text-fill: #CCD0CF; -fx-font-weight: bold; -fx-cursor: hand;"/>
-            
+
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="headerTitle" text="Tasks" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #CCD0CF;"/>
             <Region HBox.hgrow="ALWAYS"/>
-            
+
             <Button fx:id="createButton" text="+" onAction="#onShowCreate" visible="false" managed="false"
                     style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;"/>
         </HBox>
@@ -41,52 +41,50 @@
 
             <VBox fx:id="createTaskPane" spacing="15" visible="false" managed="false" alignment="CENTER"
                   style="-fx-background-color: #11212D; -fx-padding: 20; -fx-background-radius: 10;">
-                
                 <Label text="New Task" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;"/>
-                
                 <VBox spacing="10" maxWidth="400">
                     <TextField fx:id="newTitleField" promptText="Task Title" style="-fx-background-color: #253745; -fx-text-fill: white;"/>
-                    
-                    <TextArea fx:id="newDescArea" promptText="Description..." prefRowCount="3" wrapText="true" 
+                    <TextArea fx:id="newDescArea" promptText="Description..." prefRowCount="3" wrapText="true"
                               style="-fx-control-inner-background: #253745; -fx-text-fill: white;"/>
-                    
                     <DatePicker fx:id="newDueDatePicker" promptText="Due Date" style="-fx-background-color: #253745; -fx-text-fill: white;" maxWidth="Infinity"/>
                 </VBox>
-
                 <HBox spacing="15" alignment="CENTER">
-                    <Button text="Cancel" onAction="#onCancelCreate"
-                            style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
-                    <Button text="Create" onAction="#onCreateTask"
-                            style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Cancel" onAction="#onCancelCreate" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-cursor: hand;"/>
+                    <Button text="Create" onAction="#onCreateTask" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;"/>
                 </HBox>
             </VBox>
 
             <VBox fx:id="taskDetailsPane" spacing="10" visible="false" managed="false"
                   style="-fx-background-color: #11212D; -fx-padding: 15; -fx-background-radius: 10;">
-                
+
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Button text="← List" onAction="#onBackToList" style="-fx-background-color: transparent; -fx-text-fill: #9BA8AB; -fx-cursor: hand;"/>
                     <Label fx:id="detailTitleLabel" text="Task Title" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;"/>
                 </HBox>
-                
+
                 <Label fx:id="detailDescLabel" text="Description..." wrapText="true" style="-fx-text-fill: #CCD0CF; -fx-font-style: italic;"/>
-                
+
                 <Separator opacity="0.2"/>
-                
+
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Label text="My Status:" style="-fx-text-fill: white;"/>
-                    <ComboBox fx:id="statusCombo" prefWidth="150" styleClass="dark-combo"/>
-                    <Button text="Update" onAction="#onUpdateStatus" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+
+                    <ComboBox fx:id="statusCombo" prefWidth="160"
+                              style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-size: 13px; -fx-mark-color: white; -fx-control-inner-background: #34495e;"/>
+
+                    <Button fx:id="updateTaskStatusButton" text="Update" onAction="#onUpdateStatus"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;"/>
                 </HBox>
-                
+
                 <Separator opacity="0.2"/>
-                
-                <Label text="Team Progress:" style="-fx-text-fill: #9BA8AB;"/>
-                <ListView fx:id="progressListView" VBox.vgrow="ALWAYS" 
-                          style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.2);"/>
-                
+
+                <Label text="Team Progress (Latest Status &amp; Time):" style="-fx-text-fill: #9BA8AB;"/>
+
+                <ListView fx:id="progressListView" VBox.vgrow="ALWAYS"
+                          style="-fx-background-color: transparent; -fx-control-inner-background: rgba(0,0,0,0.2); -fx-padding: 5;"/>
+
                 <HBox fx:id="assignBox" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
-                    <Button text="Join Task (Assign Me)" onAction="#onAssignUser" 
+                    <Button text="Join Task (Assign Me)" onAction="#onAssignUser"
                             maxWidth="Infinity" HBox.hgrow="ALWAYS"
                             style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-cursor: hand; -fx-font-weight: bold;"/>
                 </HBox>

@@ -1,9 +1,10 @@
 package com.example.messenger.ui.controllers;
 
-import com.example.messenger.dto.ConversationDetailsResponse;
-import com.example.messenger.dto.ConversationSummary;
+import com.example.messenger.dto.convers.ConversationDetailsResponse;
+import com.example.messenger.dto.convers.ConversationSummary;
 import com.example.messenger.dto.MessageDto;
 import com.example.messenger.dto.UserDto;
+import com.example.messenger.net.ChatStompClient;
 import com.example.messenger.net.ConversationService;
 import com.example.messenger.net.MessageService;
 import com.example.messenger.net.UserService;
@@ -61,7 +62,8 @@ public class ChatController {
     private final MessageService messageService = new MessageService();
     private final ConversationService conversationService = new ConversationService();
     private final UserService userService = new UserService();
-    // MaterialService REMOVED
+    // WEBSOCKET CLIENT
+    private final ChatStompClient stompClient = new ChatStompClient();
 
     private final ObservableList<ConversationItem> conversations = FXCollections.observableArrayList();
     private Long activeConversationId = null;
@@ -78,6 +80,8 @@ public class ChatController {
     public void setup(Pane root, Runnable closeAction) {
         this.rootContainer = root;
         this.closeAction = closeAction;
+        // Підключаємо WebSocket при старті
+        new Thread(stompClient::connect).start();
 
         try {
             if (root.getScene() != null) {
@@ -124,6 +128,11 @@ public class ChatController {
             }
         });
 
+        // Cell Factories (Залишено без змін візуалізацію)
+        setupCellFactories();
+    }
+
+    private void setupCellFactories() {
         conversationsList.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(ConversationItem item, boolean empty) {
@@ -389,7 +398,11 @@ public class ChatController {
         deleteMessagePane.setVisible(false); deleteMessagePane.setManaged(false);
     }
 
-    @FXML protected void onBackToMenu(ActionEvent event) { if (closeAction != null) closeAction.run(); }
+    @FXML protected void onBackToMenu(ActionEvent event) {
+        stompClient.disconnect(); // Відключаємо WS при виході
+        if (closeAction != null) closeAction.run();
+    }
+
     @FXML protected void onBackToList(ActionEvent event) {
         activeConversationId = null; activeItem = null; showListMode(); loadUserConversations();
     }
@@ -420,7 +433,17 @@ public class ChatController {
             currentTitle = nameCache.get(item.getOtherUserId());
         }
         showChatMode(currentTitle, avatarImg);
+
+        // 1. Завантажуємо історію
         loadMessages(activeConversationId);
+
+        // 2. Підписуємось на нові повідомлення по WebSocket
+        stompClient.subscribeToConversation(activeConversationId, (newMessage) -> {
+            Platform.runLater(() -> {
+                messagesList.getItems().add(newMessage);
+                messagesList.scrollTo(messagesList.getItems().size() - 1);
+            });
+        });
 
         if ("DIRECT".equals(item.getType()) && item.getOtherUserId() != null) {
             new Thread(() -> {
@@ -451,13 +474,16 @@ public class ChatController {
         String content = messageField.getText();
         if (content == null || content.isBlank()) return;
         try {
-            messageService.sendMessage(activeConversationId, content);
+            // Використовуємо WebSocket для відправки
+            stompClient.sendMessage(activeConversationId, content);
+
+            // Якщо WS не працює, розкоментуйте нижче для fallback на REST:
+            // messageService.sendMessage(activeConversationId, content);
+
             messageField.clear();
-            loadMessages(activeConversationId);
+            // Повідомлення прийде через підписку subscribeToConversation, тому тут не додаємо вручну
         } catch (Exception e) { showError("Failed to send: " + e.getMessage()); }
     }
-
-    // Upload removed per request
 
     @FXML protected void onShowParticipants(ActionEvent event) {
         if (activeConversationId == null) return;

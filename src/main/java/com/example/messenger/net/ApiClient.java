@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -15,28 +19,59 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ApiClient {
 
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    public static final CookieManager cookieManager = new CookieManager();
+
+    static {
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+        CookieHandler.setDefault(cookieManager);
+    }
+
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .cookieHandler(cookieManager)
+            .build();
+
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+    public static void clearCookies() {
+        cookieManager.getCookieStore().removeAll();
+    }
+
     private static String buildUrl(String path) {
-        String base = Env.API_BASE_URL; // e.g. http://localhost:8080/api
+        String base = Env.API_BASE_URL;
         if (path.startsWith("/")) {
             return base + path;
         }
         return base + "/" + path;
     }
 
+    // --- ОНОВЛЕНИЙ МЕТОД АВТОРИЗАЦІЇ ---
     private static HttpRequest.Builder withAuth(HttpRequest.Builder builder) {
-        String token = SessionStore.getToken();
-        if (token != null && !token.isBlank()) {
-            builder.header("Authorization", "Bearer " + token);
+        // 1. Шукаємо JSESSIONID у куках
+        Optional<HttpCookie> sessionCookie = cookieManager.getCookieStore().getCookies().stream()
+                .filter(c -> "JSESSIONID".equals(c.getName()))
+                .findFirst();
+
+        if (sessionCookie.isPresent()) {
+            // ВАРІАНТ A: Якщо є сесія від Google -> використовуємо її
+            // Додаємо заголовок вручну, щоб HttpClient точно його відправив
+            builder.header("Cookie", "JSESSIONID=" + sessionCookie.get().getValue());
+            System.out.println("DEBUG: Sending JSESSIONID manually: " + sessionCookie.get().getValue());
+        } else {
+            // ВАРІАНТ B: Якщо сесії немає -> пробуємо Bearer Token (для звичайного входу)
+            String token = SessionStore.getToken();
+            if (token != null && !token.isBlank()) {
+                builder.header("Authorization", "Bearer " + token);
+            }
         }
+
         return builder;
     }
+    // ------------------------------------
 
     private static <T> T handleJsonResponse(HttpResponse<String> response, Class<T> responseType)
             throws IOException {
@@ -49,6 +84,8 @@ public class ApiClient {
             }
             return objectMapper.readValue(responseBody, responseType);
         } else {
+            // Додамо логування помилки для ясності
+            System.err.println("API Error " + status + ": " + responseBody);
             throw new IOException("HTTP " + status + ": " + responseBody);
         }
     }
@@ -138,9 +175,6 @@ public class ApiClient {
         }
     }
 
-    /**
-     * Simple GET that returns raw text instead of JSON.
-     */
     public static String getText(String path) throws IOException, InterruptedException {
         String url = buildUrl(path);
 
@@ -162,14 +196,6 @@ public class ApiClient {
         }
     }
 
-    /**
-     * Upload a single file using multipart/form-data with PUT.
-     *
-     * @param path         relative API path (e.g. "/users/1/avatar/file")
-     * @param fieldName    form field name (for avatar it must be "file")
-     * @param file         file to upload
-     * @param responseType class of expected JSON response
-     */
     public static <T> T putMultipartFile(String path, String fieldName, File file, Class<T> responseType)
             throws IOException, InterruptedException {
 
@@ -180,11 +206,11 @@ public class ApiClient {
         StringBuilder sb = new StringBuilder();
         sb.append("--").append(boundary).append(lineBreak);
         sb.append("Content-Disposition: form-data; name=\"")
-          .append(fieldName)
-          .append("\"; filename=\"")
-          .append(file.getName())
-          .append("\"")
-          .append(lineBreak);
+                .append(fieldName)
+                .append("\"; filename=\"")
+                .append(file.getName())
+                .append("\"")
+                .append(lineBreak);
         sb.append("Content-Type: application/octet-stream").append(lineBreak);
         sb.append(lineBreak);
 

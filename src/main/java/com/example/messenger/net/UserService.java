@@ -1,6 +1,6 @@
 package com.example.messenger.net;
 
-import com.example.messenger.dto.UpdateUserProfileRequest;
+import com.example.messenger.dto.dtuser.UpdateUserProfileRequest;
 import com.example.messenger.dto.UserDto;
 
 import java.io.File;

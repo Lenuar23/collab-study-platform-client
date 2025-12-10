@@ -1,10 +1,10 @@
 package com.example.messenger.net;
 
-import com.example.messenger.dto.AssignUserToTaskRequest;
-import com.example.messenger.dto.CreateTaskRequest;
+import com.example.messenger.dto.dtuser.AssignUserToTaskRequest;
+import com.example.messenger.dto.dttask.CreateTaskRequest;
 import com.example.messenger.dto.TaskDto;
-import com.example.messenger.dto.TaskProgressDto;
-import com.example.messenger.dto.UpdateUserTaskStatusRequest;
+import com.example.messenger.dto.dttask.TaskProgressDto;
+import com.example.messenger.dto.dttask.UpdateUserTaskStatusRequest;
 import com.example.messenger.store.SessionStore;
 
 import java.io.IOException;

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
 
 <StackPane fx:id="rootPane"
            xmlns="http://javafx.com/javafx/21"
@@ -13,25 +14,14 @@
            styleClass="root dashboard-root">
 
     <children>
-
-        <!-- Робоча область -->
         <Pane fx:id="canvas" styleClass="dashboard-canvas">
 
-            <!-- Центральне коло -->
-            <StackPane fx:id="centerHalo"
-                       alignment="CENTER"
-                       styleClass="center-halo">
-
+            <StackPane fx:id="centerHalo" alignment="CENTER" styleClass="center-halo">
                 <children>
-                    <Label fx:id="greetingLabel"
-                           styleClass="center-greeting"
-                           alignment="CENTER"
-                           text="HABIBI HAMU"/>
+                    <Label fx:id="greetingLabel" styleClass="center-greeting" alignment="CENTER" text="Welcome"/>
                 </children>
-
             </StackPane>
 
-            <!-- Орбітальні кнопки -->
             <Button fx:id="profileButton"   text="Profile"   styleClass="orbit-button"/>
             <Button fx:id="logoutButton"    text="Logout"    styleClass="orbit-button"/>
             <Button fx:id="tasksButton"     text="Tasks"     styleClass="orbit-button"/>
@@ -39,7 +29,10 @@
             <Button fx:id="groupsButton"    text="Groups"    styleClass="orbit-button"/>
             <Button fx:id="chatsButton"     text="Chats"     styleClass="orbit-button"/>
 
-        </Pane>
+            <Circle fx:id="tasksBadge" radius="7.0" fill="#ff2e2e" stroke="WHITE" strokeWidth="1.5" visible="false" mouseTransparent="true" />
+            <Circle fx:id="groupsBadge" radius="7.0" fill="#ff2e2e" stroke="WHITE" strokeWidth="1.5" visible="false" mouseTransparent="true" />
+            <Circle fx:id="chatsBadge" radius="7.0" fill="#ff2e2e" stroke="WHITE" strokeWidth="1.5" visible="false" mouseTransparent="true" />
 
+        </Pane>
     </children>
 </StackPane>

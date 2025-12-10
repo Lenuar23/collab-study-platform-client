@@ -11,12 +11,11 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <javafx.version>21</javafx.version>
-    <!-- default platform: linux. змініть на windows/mac якщо потрібно або запускайте з -Djavafx.platform=... -->
-    <javafx.platform>linux</javafx.platform>
+    <spring.version>6.0.11</spring.version>
+    <javafx.platform>win</javafx.platform>
   </properties>
 
   <dependencies>
-    <!-- додаємо classifier, щоб Maven підхопив нативні бібліотеки для вашої платформи -->
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
@@ -36,11 +35,34 @@
       <artifactId>jackson-databind</artifactId>
       <version>2.17.1</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-websocket</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-messaging</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.glassfish.tyrus.bundles</groupId>
+        <artifactId>tyrus-standalone-client</artifactId>
+        <version>2.1.3</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-web</artifactId>
+      <version>21</version>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- javafx-maven-plugin — щоб mvn javafx:run працював -->
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
@@ -50,7 +72,6 @@
         </configuration>
       </plugin>
 
-      <!-- рекомендовано для компіляції -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

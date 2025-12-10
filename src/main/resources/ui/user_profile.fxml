@@ -12,7 +12,7 @@
       fx:controller="com.example.messenger.ui.controllers.UserProfileController"
       spacing="15.0"
       style="-fx-background-color: linear-gradient(to bottom right, #253745, #11212D); -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);"
-      maxWidth="500" maxHeight="650">
+      maxWidth="500" maxHeight="700">
 
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -46,27 +46,19 @@
                 </VBox>
 
                 <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-                    
-                    <Label fx:id="errorLabel" 
-                           textFill="#e74c3c" 
-                           wrapText="true" 
-                           visible="false" 
-                           managed="false" 
-                           style="-fx-font-weight: bold;"/>
-                           
+                    <Label fx:id="errorLabel" textFill="#e74c3c" wrapText="true" visible="false" managed="false" style="-fx-font-weight: bold;"/>
                     <GridPane hgap="10.0" vgap="10.0">
                         <columnConstraints>
                             <ColumnConstraints minWidth="60.0"/>
                             <ColumnConstraints hgrow="ALWAYS"/>
                         </columnConstraints>
-                        
                         <children>
                             <Label text="Name:" style="-fx-text-fill: #9BA8AB;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                             <TextField fx:id="nameField" editable="false" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-width: 0 0 1 0; -fx-border-color: #4A5C6A;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
                             <Label text="Email:" style="-fx-text-fill: #9BA8AB;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                             <Label fx:id="emailLabel" style="-fx-text-fill: #CCD0CF;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                            
+
                             <Label text="ID:" style="-fx-text-fill: #9BA8AB;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                             <TextField fx:id="idField" editable="false" style="-fx-background-color: transparent; -fx-text-fill: #6c757d; -fx-font-size: 11px;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                         </children>
@@ -77,14 +69,18 @@
 
         <Separator opacity="0.3"/>
 
+        <Button text="View Statistics &amp; Activity" onAction="#onShowStatistics"
+                maxWidth="Infinity"
+                style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 10; -fx-padding: 10;"/>
+
+        <Separator opacity="0.1"/>
+
         <VBox spacing="10" VBox.vgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: #11212D; -fx-background-radius: 10; -fx-padding: 10;">
             <HBox alignment="CENTER" spacing="15">
                 <Label text="Minesweeper" style="-fx-text-fill: #9BA8AB; -fx-font-weight: bold;"/>
                 <Button text="Restart" onAction="#startNewGame" style="-fx-background-color: #4A5C6A; -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;"/>
             </HBox>
-            
             <GridPane fx:id="gameGrid" alignment="CENTER" hgap="2" vgap="2" />
-            
             <Label fx:id="gameStatusLabel" text="" style="-fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
         </VBox>
 

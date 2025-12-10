@@ -2,11 +2,13 @@ package com.example.messenger.ui.controllers;
 
 import com.example.messenger.dto.GroupDto;
 import com.example.messenger.dto.MessageDto;
+import com.example.messenger.net.ChatStompClient;
 import com.example.messenger.net.GroupService;
 import com.example.messenger.ui.controllers.groupacctions.GroupChatManager;
 import com.example.messenger.ui.controllers.groupacctions.GroupMembersManager;
 import com.example.messenger.ui.controllers.groupacctions.GroupSettingsManager;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform; // <--- ДОДАНО ІМПОРТ
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -26,7 +28,6 @@ import java.util.regex.Pattern;
 
 public class GroupDetailsController {
 
-
     @FXML private Label groupNameLabel;
     @FXML private Label groupIdLabel;
     @FXML private ImageView groupAvatarHeader;
@@ -40,14 +41,21 @@ public class GroupDetailsController {
     @FXML private TextField editNameField;
     @FXML private TextField editDescField;
     @FXML private TextField addMemberIdField;
-    @FXML private Label settingsInfoLabel; // Використовується як заглушка, реальні сповіщення через notificationPane
+    @FXML private Label settingsInfoLabel;
     @FXML private ListView<Long> membersListView;
     @FXML private VBox notificationPane;
     @FXML private Label notificationLabel;
 
+    // --- НОВІ ЕЛЕМЕНТИ ---
+    @FXML private VBox settingsFormPane;
+    @FXML private VBox groupDeleteConfirmationPane;
+
     // --- DATA ---
     private GroupDto group;
     private Runnable backCallback;
+
+    // --- WS Client ---
+    private final ChatStompClient stompClient = new ChatStompClient();
 
     // --- DELEGATES (MANAGERS) ---
     private GroupChatManager chatManager;
@@ -55,20 +63,29 @@ public class GroupDetailsController {
     private GroupSettingsManager settingsManager;
     private TasksController embeddedTasksController;
 
+
     @FXML
     public void initialize() {
-        // Resize matrix
+
         if (matrixCanvas != null && settingsView != null) {
             matrixCanvas.widthProperty().bind(settingsView.widthProperty());
             matrixCanvas.heightProperty().bind(settingsView.heightProperty());
         }
 
-        // Initialize Managers
+        new Thread(stompClient::connect).start();
+
         this.chatManager = new GroupChatManager(chatListView, messageField, this::showNotification);
+        this.chatManager.setStompClient(stompClient);
+
         this.membersManager = new GroupMembersManager(membersListView, addMemberIdField, this::showNotification);
-        this.settingsManager = new GroupSettingsManager(editNameField, editDescField, groupAvatarHeader,
+
+        // Ініціалізація менеджера налаштувань
+        this.settingsManager = new GroupSettingsManager(
+                editNameField, editDescField, groupAvatarHeader,
                 groupNameLabel, groupIdLabel, matrixCanvas, quoteLabel,
-                this::showNotification);
+                settingsFormPane, groupDeleteConfirmationPane,
+                this::showNotification
+        );
     }
 
     public void setGroupData(GroupDto group, GroupService service, Runnable backCallback) {
@@ -77,12 +94,10 @@ public class GroupDetailsController {
 
         Long linkedChatId = extractChatId(group.getDescription());
 
-        // Delegate setup
         chatManager.setup(group, linkedChatId);
         membersManager.setup(group, linkedChatId);
         settingsManager.setup(group, linkedChatId);
 
-        // Clear tasks view
         tasksView.getChildren().clear();
     }
 
@@ -113,6 +128,15 @@ public class GroupDetailsController {
     @FXML private void onSaveSettings() { settingsManager.saveSettings(); }
     @FXML private void onChangeGroupAvatar() { settingsManager.changeAvatar(chatView.getScene().getWindow()); }
 
+    // --- NEW DELETE GROUP ACTIONS ---
+    @FXML private void onDeleteGroup() { settingsManager.showDeleteConfirmation(); }
+    @FXML private void onConfirmDeleteGroup() {
+        // При успішному видаленні повертаємось назад (onBack)
+        settingsManager.confirmDelete(() -> Platform.runLater(this::onBack));
+    }
+    @FXML private void onCancelDeleteGroup() { settingsManager.cancelDelete(); }
+    // --------------------------------
+
     // --- TAB NAVIGATION ---
     @FXML private void onTabChat() { switchTab(chatView); }
     @FXML private void onTabTasks() { switchTab(tasksView); if (tasksView.getChildren().isEmpty()) loadTasksInterface(); }
@@ -136,6 +160,7 @@ public class GroupDetailsController {
     @FXML private void onBack() {
         chatManager.stopChatUpdates();
         settingsManager.stopVisuals();
+        stompClient.disconnect();
         if (backCallback != null) backCallback.run();
     }
 

@@ -1,6 +1,8 @@
 package com.example.messenger.net;
 
-import com.example.messenger.dto.*;
+import com.example.messenger.dto.convers.*;
+import com.example.messenger.dto.dtgroup.CreateGroupConversationRequest;
+import com.example.messenger.dto.dtuser.AddParticipantRequest;
 import com.example.messenger.store.SessionStore;
 
 import java.io.IOException;

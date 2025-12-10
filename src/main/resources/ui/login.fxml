@@ -8,71 +8,87 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.web.WebView?>
 
-<StackPane prefHeight="600.0" prefWidth="400.0" 
-           styleClass="root" 
+<StackPane prefHeight="600.0" prefWidth="400.0"
+           styleClass="root"
            stylesheets="@css/theme.css, @css/login-menu.css"
-           xmlns="http://javafx.com/javafx/21" 
+           xmlns="http://javafx.com/javafx/21"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.example.messenger.ui.controllers.LoginController">
-           
-   <children>
-      <VBox alignment="CENTER" fillWidth="false" spacing="-40.0">
-         <children>
-            <StackPane styleClass="avatar-container">
-               <children>
-                  <Circle radius="45.0" styleClass="avatar-bg" />
-                  <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" scaleX="1.8" scaleY="1.8" styleClass="avatar-icon" />
-               </children>
-               <VBox.margin>
-                  <Insets bottom="-50.0"/>
-               </VBox.margin>
-            </StackPane>
 
-            <VBox maxWidth="350.0" prefWidth="350.0" spacing="20.0" styleClass="glass-card" pickOnBounds="false">
-               <padding>
-                  <Insets bottom="40.0" left="30.0" right="30.0" top="70.0" />
-               </padding>
-               <children>
-                  <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="input-box">
-                     <children>
-                        <SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" styleClass="input-icon" />
-                        <TextField fx:id="emailField" promptText="Email ID" styleClass="text-field" HBox.hgrow="ALWAYS" />
-                     </children>
-                  </HBox>
-                  
-                  <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="input-box">
-                     <children>
-                        <SVGPath content="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" styleClass="input-icon" />
-                        <PasswordField fx:id="passwordField" promptText="Password" styleClass="text-field" HBox.hgrow="ALWAYS" />
-                     </children>
-                  </HBox>
-                
-                  </children>
-            </VBox>
+    <children>
+        <VBox alignment="CENTER" fillWidth="false" spacing="-40.0">
+            <children>
+                <StackPane styleClass="avatar-container">
+                    <children>
+                        <Circle radius="45.0" styleClass="avatar-bg" />
+                        <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" scaleX="1.8" scaleY="1.8" styleClass="avatar-icon" />
+                    </children>
+                    <VBox.margin>
+                        <Insets bottom="-50.0"/>
+                    </VBox.margin>
+                </StackPane>
 
-            <VBox alignment="CENTER" maxWidth="300.0" prefWidth="300.0" spacing="10.0" styleClass="glass-card-bottom">
-               <children>
-                  <Label fx:id="errorLabel" textFill="#ff6b6b" wrapText="true" textAlignment="CENTER" maxWidth="280.0" visible="false" managed="false" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
-                  
-                  <Button fx:id="loginButton" 
-                          maxWidth="1.7976931348623157E308" 
-                          mnemonicParsing="false" 
-                          styleClass="login-button" 
-                          text="LOGIN" 
-                          onAction="#onLoginClick"/>
-                  
-                  <Hyperlink onAction="#onGoToRegister" 
-                             styleClass="register-link" 
-                             text="Create new account" />
-               </children>
-            </VBox>
-         </children>
-      </VBox>
-   </children>
+                <VBox maxWidth="350.0" prefWidth="350.0" spacing="20.0" styleClass="glass-card" pickOnBounds="false">
+                    <padding>
+                        <Insets bottom="40.0" left="30.0" right="30.0" top="70.0" />
+                    </padding>
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="input-box">
+                            <children>
+                                <SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" styleClass="input-icon" />
+                                <TextField fx:id="emailField" promptText="Email ID" styleClass="text-field" HBox.hgrow="ALWAYS" />
+                            </children>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="input-box">
+                            <children>
+                                <SVGPath content="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" styleClass="input-icon" />
+                                <PasswordField fx:id="passwordField" promptText="Password" styleClass="text-field" HBox.hgrow="ALWAYS" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <VBox alignment="CENTER" maxWidth="300.0" prefWidth="300.0" spacing="10.0" styleClass="glass-card-bottom">
+                    <children>
+                        <Label fx:id="errorLabel" textFill="#ff6b6b" wrapText="true" textAlignment="CENTER" maxWidth="280.0" visible="false" managed="false" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+
+                        <Button fx:id="loginButton"
+                                maxWidth="1.7976931348623157E308"
+                                mnemonicParsing="false"
+                                styleClass="login-button"
+                                text="LOGIN"
+                                onAction="#onLoginClick"/>
+
+                        <Button text="Sign in with Google"
+                                onAction="#onGoogleLoginClick"
+                                style="-fx-background-color: #DB4437; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
+                                maxWidth="1.7976931348623157E308"/>
+
+                        <Hyperlink onAction="#onGoToRegister"
+                                   styleClass="register-link"
+                                   text="Create new account" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <StackPane fx:id="webViewContainer" visible="false" managed="false" style="-fx-background-color: rgba(0,0,0,0.8);">
+            <Button text="✕" StackPane.alignment="TOP_RIGHT"
+                    onAction="#onCloseWebView"
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 20px; -fx-cursor: hand;">
+                <StackPane.margin>
+                    <Insets top="10" right="20"/>
+                </StackPane.margin>
+            </Button>
+            <WebView fx:id="googleWebView" maxWidth="500" maxHeight="600"/>
+        </StackPane>
+
+    </children>
 </StackPane>

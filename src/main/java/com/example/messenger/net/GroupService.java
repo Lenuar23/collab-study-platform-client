@@ -1,9 +1,8 @@
 package com.example.messenger.net;
 
-import com.example.messenger.dto.CreateGroupRequest;
+import com.example.messenger.dto.dtgroup.CreateGroupRequest;
 import com.example.messenger.dto.GroupDto;
-import com.example.messenger.dto.UpdateGroupRequest;
-import com.example.messenger.dto.UserDto;
+import com.example.messenger.dto.dtgroup.UpdateGroupRequest;
 import com.example.messenger.store.SessionStore;
 
 import java.io.File;
@@ -52,6 +51,11 @@ public class GroupService {
 
         // Використовуємо putMultipartFile
         ApiClient.putMultipartFile(path, "file", file, GroupDto.class);
+    }
+
+    public void deleteGroup(Long groupId) throws IOException, InterruptedException {
+        // Відправляємо запит DELETE на сервер
+        ApiClient.delete("/groups/" + groupId);
     }
 
     public void updateAvatar(Long groupId, String avatarUrl) throws IOException, InterruptedException {

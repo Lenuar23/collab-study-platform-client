@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox; // Додано
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -30,6 +31,10 @@ public class GroupSettingsManager {
     private final Label groupIdLabel;
     private final Canvas matrixCanvas;
     private final Label quoteLabel;
+    // Нові поля для керування панелями
+    private final VBox settingsFormPane;
+    private final VBox deleteConfirmationPane;
+
     private final GroupService groupService;
     private final BiConsumer<String, Boolean> notificationCallback;
 
@@ -42,8 +47,11 @@ public class GroupSettingsManager {
             "\"Hello World!\"", "\"404 Wisdom Not Found\""
     };
 
+    // Оновлений конструктор
     public GroupSettingsManager(TextField name, TextField desc, ImageView avatar, Label gName, Label gId,
-                                Canvas canvas, Label quote, BiConsumer<String, Boolean> callback) {
+                                Canvas canvas, Label quote,
+                                VBox settingsForm, VBox deletePane, // Нові параметри
+                                BiConsumer<String, Boolean> callback) {
         this.editNameField = name;
         this.editDescField = desc;
         this.groupAvatarHeader = avatar;
@@ -51,6 +59,8 @@ public class GroupSettingsManager {
         this.groupIdLabel = gId;
         this.matrixCanvas = canvas;
         this.quoteLabel = quote;
+        this.settingsFormPane = settingsForm; // Збереження
+        this.deleteConfirmationPane = deletePane; // Збереження
         this.notificationCallback = callback;
         this.groupService = new GroupService();
     }
@@ -58,7 +68,8 @@ public class GroupSettingsManager {
     public void setup(GroupDto group, Long conversationId) {
         this.group = group;
         this.conversationId = conversationId;
-
+        // Скидаємо стан панелей при вході
+        showForm();
         updateHeader();
         String cleanDesc = group.getDescription() != null ? group.getDescription().replaceAll("\\[CHAT:\\d+\\]", "").trim() : "";
         editNameField.setText(group.getName());
@@ -73,6 +84,41 @@ public class GroupSettingsManager {
             loadAvatar(group.getAvatarUrl(), groupAvatarHeader);
         }
     }
+
+    // --- DELETE GROUP LOGIC ---
+
+    public void showDeleteConfirmation() {
+        if (settingsFormPane != null) { settingsFormPane.setVisible(false); settingsFormPane.setManaged(false); }
+        if (deleteConfirmationPane != null) { deleteConfirmationPane.setVisible(true); deleteConfirmationPane.setManaged(true); }
+    }
+
+    public void cancelDelete() {
+        showForm();
+    }
+
+    private void showForm() {
+        if (deleteConfirmationPane != null) { deleteConfirmationPane.setVisible(false); deleteConfirmationPane.setManaged(false); }
+        if (settingsFormPane != null) { settingsFormPane.setVisible(true); settingsFormPane.setManaged(true); }
+    }
+
+    public void confirmDelete(Runnable onSuccessExit) {
+        new Thread(() -> {
+            try {
+                // ПРИПУЩЕННЯ: У вас в GroupService є метод deleteGroup.
+                // Якщо немає, додайте: apiClient.delete("/groups/" + groupId);
+                groupService.deleteGroup(group.getGroupId());
+
+                Platform.runLater(() -> {
+                    notificationCallback.accept("Group deleted", false);
+                    if (onSuccessExit != null) onSuccessExit.run();
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> notificationCallback.accept("Failed to delete group: " + e.getMessage(), true));
+            }
+        }).start();
+    }
+
+    // --------------------------
 
     public void saveSettings() {
         String newName = editNameField.getText();
@@ -112,7 +158,7 @@ public class GroupSettingsManager {
         }
     }
 
-    // --- VISUALS ---
+    // --- VISUALS (Без змін) ---
     public void startVisuals() {
         showRandomQuote();
         startMatrix();

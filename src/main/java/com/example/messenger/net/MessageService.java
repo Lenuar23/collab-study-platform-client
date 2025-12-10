@@ -1,7 +1,7 @@
 package com.example.messenger.net;
 
 import com.example.messenger.dto.MessageDto;
-import com.example.messenger.dto.UpdateMessageRequest;
+import com.example.messenger.dto.convers.UpdateMessageRequest;
 import com.example.messenger.store.SessionStore;
 
 import java.io.IOException;

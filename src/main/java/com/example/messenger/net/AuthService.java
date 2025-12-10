@@ -1,8 +1,8 @@
 package com.example.messenger.net;
 
-import com.example.messenger.dto.AuthRequest;
-import com.example.messenger.dto.AuthResponse;
-import com.example.messenger.dto.RegisterRequest;
+import com.example.messenger.dto.dtuser.AuthRequest;
+import com.example.messenger.dto.dtuser.AuthResponse;
+import com.example.messenger.dto.dtuser.RegisterRequest;
 import com.example.messenger.dto.UserDto;
 import com.example.messenger.store.SessionStore;
 

@@ -4,6 +4,7 @@ import com.example.messenger.dto.GroupDto;
 import com.example.messenger.dto.MaterialDto;
 import com.example.messenger.dto.MessageDto;
 import com.example.messenger.dto.UserDto;
+import com.example.messenger.net.ChatStompClient; // Імпорт вашого клієнта
 import com.example.messenger.net.MaterialService;
 import com.example.messenger.net.MessageService;
 import com.example.messenger.net.UserService;
@@ -36,13 +37,17 @@ public class GroupChatManager {
     private final MessageService messageService;
     private final MaterialService materialService;
     private final UserService userService;
+
+    // --- WebSocket Client ---
+    private ChatStompClient stompClient;
+
     private final Map<Long, String> userNamesCache = new HashMap<>();
     private final Map<Long, Image> userAvatarsCache = new HashMap<>();
 
     private GroupDto group;
     private Long conversationId;
-    private Timer chatUpdater;
-    private final BiConsumer<String, Boolean> notificationCallback; // Для показу повідомлень у головному вікні
+    // Timer видалено, бо тепер у нас WebSocket
+    private final BiConsumer<String, Boolean> notificationCallback;
 
     public GroupChatManager(ListView<MessageDto> chatListView, TextField messageField,
                             BiConsumer<String, Boolean> notificationCallback) {
@@ -54,31 +59,47 @@ public class GroupChatManager {
         this.userService = new UserService();
     }
 
+    // --- Метод для отримання клієнта з контролера ---
+    public void setStompClient(ChatStompClient stompClient) {
+        this.stompClient = stompClient;
+    }
+
     public void setup(GroupDto group, Long conversationId) {
         this.group = group;
         this.conversationId = conversationId;
         setupChatList();
-        if (conversationId != null) startChatUpdates();
-        else chatListView.setPlaceholder(new Label("Chat not linked."));
+
+        if (conversationId != null) {
+            // 1. Завантажуємо історію (REST)
+            loadHistory();
+            // 2. Підключаємо прослуховування нових повідомлень (WS)
+            startChatUpdates();
+        } else {
+            chatListView.setPlaceholder(new Label("Chat not linked."));
+        }
     }
 
     public void sendMessage() {
         String msg = messageField.getText().trim();
         if (msg.isEmpty() || conversationId == null) return;
 
-        // Оптимістичне додавання повідомлення в UI
-        MessageDto localMsg = new MessageDto();
-        localMsg.setSenderUserId(SessionStore.getUserId());
-        localMsg.setSenderName("Me");
-        localMsg.setContent(msg);
-        chatListView.getItems().add(localMsg);
-        chatListView.scrollTo(chatListView.getItems().size() - 1);
-        messageField.clear();
-
-        new Thread(() -> {
-            try { messageService.sendMessage(conversationId, msg); }
-            catch (Exception e) { e.printStackTrace(); }
-        }).start();
+        // Якщо WS підключено, відправляємо через нього
+        if (stompClient != null) {
+            stompClient.sendMessage(conversationId, msg);
+            messageField.clear();
+            // Повідомлення прийде назад через підписку і додасться в список
+        } else {
+            // Fallback на REST, якщо WS не працює
+            new Thread(() -> {
+                try {
+                    messageService.sendMessage(conversationId, msg);
+                    Platform.runLater(() -> {
+                        messageField.clear();
+                        loadHistory(); // Перезавантажити список
+                    });
+                } catch (Exception e) { e.printStackTrace(); }
+            }).start();
+        }
     }
 
     public void uploadFile(Window window) {
@@ -91,13 +112,19 @@ public class GroupChatManager {
             new Thread(() -> {
                 try {
                     MaterialDto uploaded = materialService.uploadFile(group.getGroupId(), file);
-                    // Формуємо URL (або використовуємо ID для посилання)
                     String url = uploaded.getFileUrl();
                     if (url == null && uploaded.getResourceId() != null) {
                         url = "http://localhost:8080/api/resources/" + uploaded.getResourceId() + "/download";
                     }
                     String message = "[FILE] " + file.getName() + " : " + url;
-                    messageService.sendMessage(conversationId, message);
+
+                    // Відправка повідомлення про файл через WS
+                    if (stompClient != null) {
+                        stompClient.sendMessage(conversationId, message);
+                    } else {
+                        messageService.sendMessage(conversationId, message);
+                    }
+
                 } catch (Exception e) {
                     Platform.runLater(() -> notificationCallback.accept("Upload failed: " + e.getMessage(), true));
                 }
@@ -106,31 +133,33 @@ public class GroupChatManager {
     }
 
     public void startChatUpdates() {
-        stopChatUpdates();
-        chatUpdater = new Timer(true);
-        chatUpdater.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (conversationId == null) return;
-                try {
-                    MessageDto[] messages = messageService.listMessages(conversationId);
-                    Platform.runLater(() -> {
-                        ObservableList<MessageDto> items = FXCollections.observableArrayList(messages);
-                        if (chatListView.getItems().size() != items.size()) {
-                            chatListView.setItems(items);
-                            chatListView.scrollTo(items.size() - 1);
-                        }
-                    });
-                } catch (Exception e) { /* quiet error */ }
-            }
-        }, 0, 2000);
+        // Підписка на WebSocket топік
+        if (stompClient != null && conversationId != null) {
+            stompClient.subscribeToConversation(conversationId, (newMessage) -> {
+                Platform.runLater(() -> {
+                    chatListView.getItems().add(newMessage);
+                    chatListView.scrollTo(chatListView.getItems().size() - 1);
+                });
+            });
+        }
     }
 
     public void stopChatUpdates() {
-        if (chatUpdater != null) {
-            chatUpdater.cancel();
-            chatUpdater = null;
-        }
+        // Тут можна нічого не робити, бо відключення WS відбувається в головному контролері при виході,
+        // або можна додати логіку відписки, якщо ChatStompClient це підтримує.
+    }
+
+    private void loadHistory() {
+        new Thread(() -> {
+            try {
+                MessageDto[] messages = messageService.listMessages(conversationId);
+                Platform.runLater(() -> {
+                    ObservableList<MessageDto> items = FXCollections.observableArrayList(messages);
+                    chatListView.setItems(items);
+                    chatListView.scrollTo(items.size() - 1);
+                });
+            } catch (Exception e) { e.printStackTrace(); }
+        }).start();
     }
 
     private void setupChatList() {
@@ -240,7 +269,6 @@ public class GroupChatManager {
         }
     }
 
-    // Методи кешування (спрощені для економії місця)
     private void loadUserAvatar(Long userId, Circle circle) {
         if (userAvatarsCache.containsKey(userId)) { circle.setFill(new ImagePattern(userAvatarsCache.get(userId))); return; }
         new Thread(() -> { try { UserDto u = userService.getUserById(userId); if (u.getAvatarUrl() != null) { Image img = new Image("http://localhost:8080" + u.getAvatarUrl(), true); img.progressProperty().addListener((o,ov,nv) -> { if(nv.doubleValue()==1.0) Platform.runLater(()->{ userAvatarsCache.put(userId, img); circle.setFill(new ImagePattern(img)); }); }); } } catch (Exception e) {} }).start();
